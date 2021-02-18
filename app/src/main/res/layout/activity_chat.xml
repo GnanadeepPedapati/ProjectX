@@ -8,12 +8,15 @@
     tools:context=".ChatActivity">
 
 
-    <LinearLayout
+    <RelativeLayout
+        android:id="@+id/activity_main"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:orientation="vertical">
-
+        android:layout_height="match_parent"
+        android:paddingBottom="20px"
+        android:paddingLeft="20px"
+        android:paddingRight="20px"
+        android:paddingTop="20px"
+        tools:context="com.example.projectx">
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view"
             android:layout_width="match_parent"
@@ -21,30 +24,31 @@
             tools:ignore="MissingConstraints">
 
         </androidx.recyclerview.widget.RecyclerView>
-    </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:background="@color/colorPrimaryDark"
-        android:gravity="bottom"
-        android:orientation="horizontal">
-
-        <EditText
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:src="@android:drawable/ic_menu_send"
+            android:id="@+id/fab"
+            android:tint="@android:color/white"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            app:fabSize="mini" />
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_toLeftOf="@id/fab"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true">
 
-            android:layout_weight="1"
-            android:hint="Write a message"
-            android:textColor="#CFD8DC"
-            android:textColorHint="#CFD8DC" />
-
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="5"
-            android:padding="4dp"
-            android:src="@android:drawable/ic_menu_send" />
-    </LinearLayout>
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Input"
+                android:id="@+id/input"
+                />
+        </com.google.android.material.textfield.TextInputLayout>
+    </RelativeLayout>
 
 </LinearLayout>

@@ -12,4 +12,17 @@ public class MessageModel {
         this.message = message;
         this.messageType = messageType;
     }
+    public MessageModel(){
+
+    }
+
+    public String getMessageText() {
+        return message;
+    }
+
+    public void setMessageText(String messageText) {
+        this.message = messageText;
+    }
+
+
 }
