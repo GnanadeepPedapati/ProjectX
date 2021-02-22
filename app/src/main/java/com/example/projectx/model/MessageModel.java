@@ -4,24 +4,18 @@ import java.util.Date;
 
 public class MessageModel {
     public String message;
-    public int messageType;
+    public boolean seen;
     public Date messageTime = new Date();
+    public String sender;
 
     // Constructor
-    public MessageModel(String message, int messageType) {
+    public MessageModel(String message, String sender,boolean seen) {
         this.message = message;
-        this.messageType = messageType;
+        this.sender = sender;
+        this.seen = seen;
     }
     public MessageModel(){
 
-    }
-
-    public String getMessageText() {
-        return message;
-    }
-
-    public void setMessageText(String messageText) {
-        this.message = messageText;
     }
 
 

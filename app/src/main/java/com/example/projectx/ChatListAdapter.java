@@ -1,6 +1,7 @@
 package com.example.projectx;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,19 +19,19 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     private final Context context;
     ArrayList<MessageModel> list;
-    public static final int MESSAGE_TYPE_IN = 1;
-    public static final int MESSAGE_TYPE_OUT = 2;
+    public String user = null;
 
-    public ChatListAdapter(Context context, ArrayList<MessageModel> list) { // you can pass other parameters in constructor
+    public ChatListAdapter(Context context, ArrayList<MessageModel> list,String user) { // you can pass other parameters in constructor
         this.context = context;
         this.list = list;
+        this.user = user;
     }
 
 
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        if (viewType == MESSAGE_TYPE_IN) {
+        if (viewType == 1) {
             return new RightChatBubbleViewHolder(LayoutInflater.from(context).inflate(R.layout.chat_right_bubble, parent, false));
         }
         return new LeftChatBubbleViewHolder(LayoutInflater.from(context).inflate(R.layout.chat_left_bubble, parent, false));
@@ -38,7 +39,7 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        if (list.get(position).messageType == MESSAGE_TYPE_IN) {
+        if (list.get(position).sender.equals(user)) {
             ((RightChatBubbleViewHolder) holder).bind(position);
         } else {
             ((LeftChatBubbleViewHolder) holder).bind(position);
@@ -53,7 +54,10 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     @Override
     public int getItemViewType(int position) {
-        return list.get(position).messageType;
+        Log.d("user","sender : "+list.get(position).sender.equals(user));
+        Log.d("user1","user : "+user);
+
+        return list.get(position).sender.equals(user)?1:0;
     }
 
 
