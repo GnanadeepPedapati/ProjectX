@@ -2,13 +2,14 @@ package com.example.projectx;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ListView;
 
 import java.util.ArrayList;
 
-public class RequestListActivity extends AppCompatActivity {
+public class RequestListActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

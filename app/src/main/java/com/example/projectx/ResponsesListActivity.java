@@ -2,6 +2,7 @@ package com.example.projectx;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.widget.ListView;
 
@@ -9,7 +10,7 @@ import com.example.projectx.model.ResponseOverview;
 
 import java.util.ArrayList;
 
-public class ResponsesListActivity extends AppCompatActivity {
+public class ResponsesListActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

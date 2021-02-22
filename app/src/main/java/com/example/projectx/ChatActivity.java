@@ -12,10 +12,12 @@ import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.FirebaseError;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.*;
 
@@ -28,14 +30,16 @@ import java.util.Map;
 public class ChatActivity extends AppCompatActivity {
 
     RecyclerView recyclerView;
+    ProgressBar progressBar;
     ArrayList<MessageModel> messagesList = new ArrayList<>();
-    ChatListAdapter adapter = new ChatListAdapter(this, messagesList,"rahim");
+    ChatListAdapter adapter = new ChatListAdapter(this, messagesList, "rahim");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        progressBar = findViewById(R.id.progress_bar);
         displayMessage();
         DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference().child("Chats");
         addPostEventListener(mDatabase);
@@ -46,7 +50,9 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 EditText edit = (EditText) findViewById(R.id.input);
-                mDatabase.child("ram_rahim").push().setValue(new MessageModel(edit.getText().toString(),"rahim",false));
+
+                if (!edit.getText().toString().trim().equals(""))
+                    mDatabase.child("ram_rahim").push().setValue(new MessageModel(edit.getText().toString().trim(), "rahim", false));
                 edit.setText("");
             }
         });
@@ -73,13 +79,14 @@ public class ChatActivity extends AppCompatActivity {
 //
 //    }
 
-    public void displayMessage(){
+    public void displayMessage() {
         final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         recyclerView = findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setAdapter(adapter);
 
     }
+
     private void addPostEventListener(DatabaseReference mPostReference) {
         // [START post_value_event_listener]
 //        ValueEventListener postListener = new ValueEventListener() {
@@ -150,6 +157,21 @@ public class ChatActivity extends AppCompatActivity {
         };
 
         mPostReference.child("ram_rahim").addChildEventListener(childEventListener);
+
+
+        mPostReference.child("ram_rahim").addListenerForSingleValueEvent(new ValueEventListener() {
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                progressBar.setVisibility(View.INVISIBLE);
+                recyclerView.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+
+
+        });
     }
 
 }

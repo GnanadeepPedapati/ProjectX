@@ -5,50 +5,62 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@color/black"
     tools:context=".ChatActivity">
 
 
-    <RelativeLayout
-        android:id="@+id/activity_main"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingBottom="20px"
-        android:paddingLeft="20px"
-        android:paddingRight="20px"
-        android:paddingTop="20px"
-        tools:context="com.example.projectx">
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="false"
+            />
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view"
+            android:visibility ="gone"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             tools:ignore="MissingConstraints">
 
         </androidx.recyclerview.widget.RecyclerView>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:gravity="bottom"
+        android:orientation="horizontal">
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="5"
+            android:id="@+id/input"
+            android:background="@drawable/rounded_rectangle_white"
+            android:hint="Write a message"
+            android:textColor="@android:color/black"
+            android:paddingLeft="5dp"
+            android:textColorHint="#CFD8DC" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:clickable="true"
-            android:src="@android:drawable/ic_menu_send"
-            android:id="@+id/fab"
-            android:tint="@android:color/white"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true"
-            app:fabSize="mini" />
-        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_toLeftOf="@id/fab"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentStart="true">
-
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Input"
-                android:id="@+id/input"
-                />
-        </com.google.android.material.textfield.TextInputLayout>
-    </RelativeLayout>
+            android:layout_weight="1"
+            android:padding="5dp"
+            android:id="@+id/fab"
+            android:layout_marginRight="4dp"
+            app:fabCustomSize="40dp"
+            android:layout_gravity="center"
+            app:rippleColor="@color/colorPrimaryDark"
+            android:src="@android:drawable/ic_menu_send" />
+    </LinearLayout>
 
 </LinearLayout>

@@ -11,7 +11,8 @@
         android:textStyle="bold"
         android:textSize="30dp"
         android:padding="8dp"
-        android:background ="@android:color/holo_blue_dark"
+        android:background ="#2B60DE"
+        android:textColor="@color/white"
         android:text="I need tenaximic acid 500ml, Please share the details of shop"/>
 
     <ListView

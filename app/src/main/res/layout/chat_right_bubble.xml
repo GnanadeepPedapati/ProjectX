@@ -11,8 +11,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
-        android:padding="10dp"
-        android:background="#5089fa"
+        android:padding="4dp"
+        android:background="@drawable/rounded_rectangle_holo_blue"
         android:layout_alignParentRight="true">
 
         <TextView
@@ -22,8 +22,8 @@
             android:minWidth="120dp"
             android:maxWidth="250dp"
             android:layout_alignParentLeft="true"
-            android:textSize="16sp"
             android:textColor="@android:color/white"
+            android:textSize="16sp"
             android:text="Hi" />
 
         <TextView
