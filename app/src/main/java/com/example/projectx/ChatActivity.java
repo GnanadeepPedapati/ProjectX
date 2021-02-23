@@ -19,6 +19,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseError;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.*;
 
 import com.example.projectx.model.MessageModel;
@@ -32,7 +33,11 @@ public class ChatActivity extends AppCompatActivity {
     RecyclerView recyclerView;
     ProgressBar progressBar;
     ArrayList<MessageModel> messagesList = new ArrayList<>();
-    ChatListAdapter adapter = new ChatListAdapter(this, messagesList, "rahim");
+    ChatListAdapter adapter;
+    String chatId = "YD8bboxlMFPUIB2wlCCeQv9F6Ui2_ZyO9cTzInrNrqFEM91AZsA2aU8O2";
+
+    FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +45,14 @@ public class ChatActivity extends AppCompatActivity {
         setContentView(R.layout.activity_chat);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         progressBar = findViewById(R.id.progress_bar);
+        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(getApplicationContext(), "User not logged In", Toast.LENGTH_LONG).show();
+            return;
+        }
+        final String uid = currentUser.getUid();
+        adapter = new ChatListAdapter(this, messagesList, uid);
+
         displayMessage();
         DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference().child("Chats");
         addPostEventListener(mDatabase);
@@ -52,7 +65,7 @@ public class ChatActivity extends AppCompatActivity {
                 EditText edit = (EditText) findViewById(R.id.input);
 
                 if (!edit.getText().toString().trim().equals(""))
-                    mDatabase.child("ram_rahim").push().setValue(new MessageModel(edit.getText().toString().trim(), "rahim", false));
+                    mDatabase.child(chatId).push().setValue(new MessageModel(edit.getText().toString().trim(), uid, false));
                 edit.setText("");
             }
         });
@@ -156,10 +169,9 @@ public class ChatActivity extends AppCompatActivity {
             }
         };
 
-        mPostReference.child("ram_rahim").addChildEventListener(childEventListener);
+        mPostReference.child(chatId).addChildEventListener(childEventListener);
 
-
-        mPostReference.child("ram_rahim").addListenerForSingleValueEvent(new ValueEventListener() {
+        mPostReference.child(chatId).addListenerForSingleValueEvent(new ValueEventListener() {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 progressBar.setVisibility(View.INVISIBLE);
                 recyclerView.setVisibility(View.VISIBLE);

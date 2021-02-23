@@ -3,6 +3,8 @@ package com.example.projectx;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import android.Manifest;
 import android.content.Intent;
@@ -12,9 +14,13 @@ import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Toast;
+
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.io.IOException;
 
@@ -24,22 +30,57 @@ public class HomeActivity extends AppCompatActivity {
 
     //Image request code
     private int PICK_IMAGE_REQUEST = 1;
-
+    Fragment active;
     //storage permission code
     private static final int STORAGE_PERMISSION_CODE = 123;
+
+    BottomNavigationView bottomNavigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         requestStoragePermission();
-        ImageButton attachButton = findViewById(R.id.attachFile);
-        attachButton.setOnClickListener(new View.OnClickListener() {
+        Fragment homeFragment = HomeFragment.newInstance();
+        Fragment requestsFragment = RequestsListFragment.newInstance("1", "2");
+        Fragment responsesFragment = ResponsesListFragment.newInstance("1", "2");
+        active = homeFragment;
+        final FragmentManager fm = getSupportFragmentManager();
+
+        fm.beginTransaction().add(R.id.main_container, requestsFragment, "3").hide(requestsFragment).commit();
+        fm.beginTransaction().add(R.id.main_container, responsesFragment, "2").hide(responsesFragment).commit();
+        fm.beginTransaction().add(R.id.main_container, homeFragment, "1").commit();
+
+
+        bottomNavigationView = findViewById(R.id.bottom_navigation);
+        bottomNavigationView.setSelectedItemId(R.id.home);
+        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
-            public void onClick(View v) {
-                attachFile();
+            public boolean onNavigationItemSelected(@androidx.annotation.NonNull MenuItem item) {
+
+                switch (item.getItemId()) {
+                    case R.id.home:
+                        fm.beginTransaction().hide(active).show(homeFragment).commit();
+                        active = homeFragment;
+                        return true;
+
+                    case R.id.outgoing:
+                        fm.beginTransaction().hide(active).show(requestsFragment).commit();
+                        active = requestsFragment;
+                        return true;
+
+                    case R.id.incoming:
+                        fm.beginTransaction().hide(active).show(responsesFragment).commit();
+                        active = responsesFragment;
+                        return true;
+
+                }
+                return false;
+
+
             }
         });
+
 
     }
 
@@ -63,16 +104,6 @@ public class HomeActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
-            Uri selectedImageURI = data.getData();
-            Cursor returnCursor =
-                    getContentResolver().query(selectedImageURI, null, null, null, null);
-            int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-            returnCursor.moveToFirst();
-
-
-            Toast.makeText(getApplicationContext(), "Selected" + returnCursor.getString(nameIndex), Toast.LENGTH_LONG).show();
-        }
     }
 
 
@@ -96,13 +127,4 @@ public class HomeActivity extends AppCompatActivity {
     }
 
 
-
-
-    private void attachFile() {
-        Intent intent = new Intent();
-        intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
-
-    }
 }

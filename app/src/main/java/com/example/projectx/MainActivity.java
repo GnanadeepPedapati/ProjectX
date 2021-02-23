@@ -27,13 +27,10 @@ import java.util.List;
 public class MainActivity extends Activity {
 
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
 
 
         new Handler().postDelayed(new Runnable() {
@@ -42,7 +39,14 @@ public class MainActivity extends Activity {
             @Override
             public void run() {
                 // This method will be executed once the timer is over
-                Intent i = new Intent(MainActivity.this, ChatActivity.class);
+                boolean userLoggedIn = UserDetailsUtil.isUserLoggedIn();
+                Class targetClass;
+                if (userLoggedIn)
+                    targetClass = HomeActivity.class;
+                else
+                    targetClass = SignInActivity.class;
+
+                Intent i = new Intent(MainActivity.this, targetClass);
                 startActivity(i);
                 finish();
             }

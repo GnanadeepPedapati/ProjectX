@@ -86,9 +86,9 @@ public class SignInActivity extends Activity implements View.OnClickListener {
             if (resultCode == RESULT_OK) {
                 // Successfully signed in
                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                Toast.makeText(this, "LoggrfdIn", Toast.LENGTH_LONG).show();
                 Log.d("Result", "onActivityResult: Success");
                 Toast.makeText(this, "LoggedIn", Toast.LENGTH_LONG).show();
+                postLogin();
 
                 // ...
             } else {
@@ -113,7 +113,6 @@ public class SignInActivity extends Activity implements View.OnClickListener {
 
         String email = emailInput.getText().toString();
         String password = passwordInput.getText().toString();
-        Toast.makeText(this, "hllo" + password, Toast.LENGTH_LONG).show();
 
         auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(SignInActivity.this, new OnCompleteListener<AuthResult>() {
@@ -126,11 +125,17 @@ public class SignInActivity extends Activity implements View.OnClickListener {
 
                         } else {
                             Toast.makeText(SignInActivity.this, "Success", Toast.LENGTH_LONG).show();
+                            postLogin();
                         }
                     }
                 });
     }
 
+
+    private void postLogin() {
+        Intent i = new Intent(SignInActivity.this, ChatActivity.class);
+        startActivity(i);
+    }
 
     // [END auth_fui_result]
 }
