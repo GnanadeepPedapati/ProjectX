@@ -25,6 +25,18 @@
             android:textColor="@android:color/black"
             android:text="Hi" />
 
+
+
+        <ImageView
+            android:id="@+id/message_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="120dp"
+            android:maxWidth="250dp"
+            android:visibility="invisible"
+            />
+
+
         <TextView
             android:id="@+id/date_text"
             android:layout_width="wrap_content"

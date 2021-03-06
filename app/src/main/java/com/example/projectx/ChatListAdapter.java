@@ -1,16 +1,25 @@
 package com.example.projectx;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.projectx.model.MessageModel;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -20,11 +29,17 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private final Context context;
     ArrayList<MessageModel> list;
     public String user = null;
+    boolean isImageFitToScreen;
 
-    public ChatListAdapter(Context context, ArrayList<MessageModel> list,String user) { // you can pass other parameters in constructor
+    FirebaseStorage storage;
+    StorageReference storageReference;
+
+    public ChatListAdapter(Context context, ArrayList<MessageModel> list, String user) { // you can pass other parameters in constructor
         this.context = context;
         this.list = list;
         this.user = user;
+        storage = FirebaseStorage.getInstance();
+        storageReference = storage.getReference();
     }
 
 
@@ -39,7 +54,7 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        if (list.get(position).sender.equals(user)) {
+        if (list.get(position).getSender().equals(user)) {
             ((RightChatBubbleViewHolder) holder).bind(position);
         } else {
             ((LeftChatBubbleViewHolder) holder).bind(position);
@@ -53,27 +68,65 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
 
     @Override
-    public int getItemViewType(int position) {
-        Log.d("user","sender : "+list.get(position).sender.equals(user));
-        Log.d("user1","user : "+user);
-
-        return list.get(position).sender.equals(user)?1:0;
+    public long getItemId(int position) {
+        return position;
     }
 
+    @Override
+    public int getItemViewType(int position) {
+        Log.d("user", "sender : " + list.get(position).getSender().equals(user));
+        Log.d("user1", "user : " + user);
+
+        return list.get(position).getSender().equals(user) ? 1 : 0;
+    }
 
 
     private class RightChatBubbleViewHolder extends RecyclerView.ViewHolder {
 
-        TextView messageTV,dateTV;
+        TextView messageTV, dateTV;
+        ImageView imageView;
+
         RightChatBubbleViewHolder(final View itemView) {
             super(itemView);
             messageTV = itemView.findViewById(R.id.message_text);
             dateTV = itemView.findViewById(R.id.date_text);
+            imageView = itemView.findViewById(R.id.message_image);
+
+
         }
+
         void bind(int position) {
             MessageModel messageModel = list.get(position);
-            messageTV.setText(messageModel.message);
-            dateTV.setText(DateFormat.getTimeInstance(DateFormat.SHORT).format(messageModel.messageTime));
+            String messageText = messageModel.getMessage();
+            if (!messageText.contains("images")) {
+                messageTV.setText(messageText);
+                //Some issue with recyler view - so we need to set all visiblity and gone pro[erly
+                messageTV.setVisibility(View.VISIBLE);
+
+                Glide.with(context).clear(imageView);
+                imageView.setVisibility(View.GONE);
+            } else {
+                StorageReference imageStorage = storageReference.child(messageText);
+                imageView.setVisibility(View.VISIBLE);
+                messageTV.setVisibility(View.GONE);
+
+                Glide.with(context)
+                        .load(imageStorage)
+                        .into(imageView);
+
+            }
+            //dateTV.setText(DateFormat.getTimeInstance(DateFormat.SHORT).format(messageModel.getMessageTime()));
+
+
+            imageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    Intent intent = new Intent(context, PhotoViewActivity.class);
+                    intent.putExtra("ref", messageText);
+                    context.startActivity(intent);
+                }
+            });
         }
     }
 
@@ -81,17 +134,31 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private class LeftChatBubbleViewHolder extends RecyclerView.ViewHolder {
 
         TextView messageTV, dateTV;
+        ImageView imageView;
 
         LeftChatBubbleViewHolder(final View itemView) {
             super(itemView);
             messageTV = itemView.findViewById(R.id.message_text);
             dateTV = itemView.findViewById(R.id.date_text);
+            imageView = itemView.findViewById(R.id.message_image);
+
         }
+
 
         void bind(int position) {
             MessageModel messageModel = list.get(position);
-            messageTV.setText(messageModel.message);
-            dateTV.setText(DateFormat.getTimeInstance(DateFormat.SHORT).format(messageModel.messageTime));
+            String messageText = messageModel.getMessage();
+            if (!messageText.contains("images"))
+                messageTV.setText(messageText);
+            else {
+                StorageReference imageStorage = storageReference.child(messageText);
+                imageView.setVisibility(View.VISIBLE);
+                Glide.with(context)
+                        .load(imageStorage)
+                        .into(imageView);
+
+            }
+           // dateTV.setText(DateFormat.getTimeInstance(DateFormat.SHORT).format(messageModel.getMessageTime()));
         }
     }
 }

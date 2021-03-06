@@ -1,22 +1,21 @@
 package com.example.projectx.model;
 
-import java.util.Date;
+import com.google.firebase.Timestamp;
 
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
 public class MessageModel {
-    public String message;
-    public boolean seen;
-    public Date messageTime = new Date();
-    public String sender;
+    private String message;
+    private String sender;
+    private boolean seen;
 
-    // Constructor
-    public MessageModel(String message, String sender,boolean seen) {
-        this.message = message;
-        this.sender = sender;
-        this.seen = seen;
-    }
-    public MessageModel(){
 
-    }
+  public   MessageModel(){}
 
 
 }

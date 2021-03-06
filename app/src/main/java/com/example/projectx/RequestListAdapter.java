@@ -7,14 +7,16 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import com.example.projectx.model.businessmodels.RequestListModel;
+
 import java.util.List;
 
 public class RequestListAdapter extends BaseAdapter {
 
     private Context context;
-    private List<String> listItems;
+    private List<RequestListModel> listItems;
 
-    RequestListAdapter(Context context, List<String> listItems) {
+    RequestListAdapter(Context context, List<RequestListModel> listItems) {
 
         this.context = context;
         this.listItems = listItems;
@@ -44,17 +46,20 @@ public class RequestListAdapter extends BaseAdapter {
         }
 
         // get current item to be displayed
-        String name = listItems.get(position);
+        RequestListModel requestListModel = listItems.get(position);
 
         // get the TextView for item name and item description
-        TextView textViewItemName = (TextView)
-                convertView.findViewById(R.id.text_view_item_name);
-        TextView textViewItemDescription = (TextView)
-                convertView.findViewById(R.id.text_view_item_description);
+        TextView requestText = (TextView)
+                convertView.findViewById(R.id.request_text);
+        TextView createDate = (TextView)
+                convertView.findViewById(R.id.request_create_time);
+        TextView responsesCount = (TextView)
+                convertView.findViewById(R.id.responses_count);
 
+        responsesCount.setText(String.valueOf(requestListModel.getResponsesCount())+" Responses");
         //sets the text for item name and item description from the current item object
-        textViewItemName.setText(name);
-        textViewItemDescription.setText("I am the description");
+        requestText.setText(requestListModel.getRequest());
+        createDate.setText(requestListModel.getCreatedAt().toDate().toString());
 
         // returns the view for the current row
         return convertView;

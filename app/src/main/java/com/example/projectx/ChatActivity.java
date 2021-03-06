@@ -18,6 +18,7 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseError;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.*;
@@ -27,6 +28,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Objects;
 
 public class ChatActivity extends AppCompatActivity {
 
@@ -34,14 +36,18 @@ public class ChatActivity extends AppCompatActivity {
     ProgressBar progressBar;
     ArrayList<MessageModel> messagesList = new ArrayList<>();
     ChatListAdapter adapter;
-    String chatId = "YD8bboxlMFPUIB2wlCCeQv9F6Ui2_ZyO9cTzInrNrqFEM91AZsA2aU8O2";
+    //  String chatId = "YD8bboxlMFPUIB2wlCCeQv9F6Ui2_ZyO9cTzInrNrqFEM91AZsA2aU8O2";
 
+    String loggedInUser;
+    private String chatId;
     FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        chatId = getIntent().getStringExtra("chatId");
         setContentView(R.layout.activity_chat);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         progressBar = findViewById(R.id.progress_bar);
@@ -50,8 +56,11 @@ public class ChatActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "User not logged In", Toast.LENGTH_LONG).show();
             return;
         }
-        final String uid = currentUser.getUid();
-        adapter = new ChatListAdapter(this, messagesList, uid);
+        loggedInUser = currentUser.getUid();
+        final String otherUser = getIntent().getStringExtra("otherUser");
+        chatId = UserDetailsUtil.generateChatId(loggedInUser, otherUser);
+
+        adapter = new ChatListAdapter(this, messagesList, loggedInUser);
 
         displayMessage();
         DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference().child("Chats");
@@ -64,13 +73,31 @@ public class ChatActivity extends AppCompatActivity {
             public void onClick(View view) {
                 EditText edit = (EditText) findViewById(R.id.input);
 
-                if (!edit.getText().toString().trim().equals(""))
-                    mDatabase.child(chatId).push().setValue(new MessageModel(edit.getText().toString().trim(), uid, false));
+                if (!edit.getText().toString().trim().equals("")) {
+                    MessageModel messageModel = new MessageModel(edit.getText().toString().trim(), loggedInUser, false);
+                    mDatabase.child(ChatActivity.this.chatId).child("messages").push().setValue(messageModel);
+                    mDatabase.child(ChatActivity.this.chatId).child("lastMessage").setValue(messageModel);
+
+                    mDatabase.child(ChatActivity.this.chatId).child("unseenCount" + otherUser).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DataSnapshot> task) {
+                            if (task.isSuccessful()) {
+                                Integer lastUnseenCount = task.getResult().getValue(Integer.class);
+                                if (Objects.isNull(lastUnseenCount))
+                                    lastUnseenCount = 0;
+                                mDatabase.child(ChatActivity.this.chatId).child("unseenCount" + otherUser).setValue(lastUnseenCount + 1);
+
+                            }
+                        }
+                    });
+                }
                 edit.setText("");
             }
         });
 //        displayMessages(mDatabase);
     }
+
+
 //    public void displayMessages(DatabaseReference mDatabase){
 //
 //        mDatabase.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
@@ -98,30 +125,11 @@ public class ChatActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setAdapter(adapter);
 
+
     }
 
     private void addPostEventListener(DatabaseReference mPostReference) {
-        // [START post_value_event_listener]
-//        ValueEventListener postListener = new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                // Get Post object and use the values to update the UI
-////                Map<String,MessageModel> post = dataSnapshot.getValue(Map.class);
-////                MessageModel msg = null;
-//                MessageModel msg = dataSnapshot.getValue(MessageModel.class);
-////                if(post != null){
-////                    msg = (MessageModel) post.get("rahim");
-////                    Log.d("firebase_push", msg.message.toString());
-////                    displayMessage(msg);
-////                }
-//                if(msg != null && msg.message != null){
-//                    Log.d("firebase_push", msg.message);
-//                    displayMessage(msg);
-//                }
-//
-//
-//            }
-//        };
+
         ChildEventListener childEventListener = new ChildEventListener() {
 
             @Override
@@ -133,6 +141,7 @@ public class ChatActivity extends AppCompatActivity {
                 messagesList.add(msg);
                 adapter.notifyDataSetChanged();
                 recyclerView.scrollToPosition(messagesList.size() - 1);
+                mPostReference.child(chatId).child("unseenCount" + loggedInUser).setValue(0);
 
 
                 // ...
@@ -149,6 +158,7 @@ public class ChatActivity extends AppCompatActivity {
                 messagesList.add(msg);
                 adapter.notifyDataSetChanged();
                 recyclerView.scrollToPosition(messagesList.size() - 1);
+                mPostReference.child(chatId).child("unseenCount" + loggedInUser).setValue(0);
 
                 // ...
             }
@@ -169,9 +179,9 @@ public class ChatActivity extends AppCompatActivity {
             }
         };
 
-        mPostReference.child(chatId).addChildEventListener(childEventListener);
+        mPostReference.child(chatId).child("messages").addChildEventListener(childEventListener);
 
-        mPostReference.child(chatId).addListenerForSingleValueEvent(new ValueEventListener() {
+        mPostReference.child(chatId).child("messages").addListenerForSingleValueEvent(new ValueEventListener() {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 progressBar.setVisibility(View.INVISIBLE);
                 recyclerView.setVisibility(View.VISIBLE);
