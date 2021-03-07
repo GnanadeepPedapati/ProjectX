@@ -98,6 +98,7 @@ public class RequestsListFragment extends Fragment {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent intent = new Intent(getContext(), ResponsesListActivity.class);
                 intent.putExtra("requestId", requests.get(i).getRequestId());
+                intent.putExtra("requestText",requests.get(i).getRequest());
                 Toast.makeText(getContext(),requests.get(i).getRequestId(), Toast.LENGTH_LONG).show();
                 startActivity(intent);
             }

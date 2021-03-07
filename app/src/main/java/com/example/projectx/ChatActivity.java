@@ -37,9 +37,10 @@ public class ChatActivity extends AppCompatActivity {
     ArrayList<MessageModel> messagesList = new ArrayList<>();
     ChatListAdapter adapter;
     //  String chatId = "YD8bboxlMFPUIB2wlCCeQv9F6Ui2_ZyO9cTzInrNrqFEM91AZsA2aU8O2";
-
+    ChildEventListener childEventListener;
     String loggedInUser;
     private String chatId;
+    DatabaseReference mDatabase;
     FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
 
 
@@ -63,7 +64,7 @@ public class ChatActivity extends AppCompatActivity {
         adapter = new ChatListAdapter(this, messagesList, loggedInUser);
 
         displayMessage();
-        DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference().child("Chats");
+        mDatabase = FirebaseDatabase.getInstance().getReference().child("Chats");
         addPostEventListener(mDatabase);
 //        FirebaseAuth.getInstance()
 //                .getCurrentUser()
@@ -194,6 +195,13 @@ public class ChatActivity extends AppCompatActivity {
 
 
         });
+    }
+
+    @Override
+    protected void onPause() {
+        if (Objects.nonNull(childEventListener))
+            mDatabase.child(chatId).child("messages").removeEventListener(childEventListener);
+        super.onPause();
     }
 
 }
