@@ -74,7 +74,7 @@ public class ChatActivity extends AppCompatActivity {
                 EditText edit = (EditText) findViewById(R.id.input);
 
                 if (!edit.getText().toString().trim().equals("")) {
-                    MessageModel messageModel = new MessageModel(edit.getText().toString().trim(), loggedInUser, false);
+                    MessageModel messageModel = new MessageModel(edit.getText().toString().trim(), loggedInUser, false,Timestamp.now());
                     mDatabase.child(ChatActivity.this.chatId).child("messages").push().setValue(messageModel);
                     mDatabase.child(ChatActivity.this.chatId).child("lastMessage").setValue(messageModel);
 

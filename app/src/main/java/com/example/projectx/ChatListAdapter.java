@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.projectx.model.MessageModel;
+import com.google.firebase.Timestamp;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -115,7 +116,8 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                         .into(imageView);
 
             }
-            //dateTV.setText(DateFormat.getTimeInstance(DateFormat.SHORT).format(messageModel.getMessageTime()));
+//            Timestamp ts = new Timestamp();
+            dateTV.setText(messageModel.getMessageTime().toDate().toString());
 
 
             imageView.setOnClickListener(new View.OnClickListener() {
@@ -158,7 +160,7 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                         .into(imageView);
 
             }
-           // dateTV.setText(DateFormat.getTimeInstance(DateFormat.SHORT).format(messageModel.getMessageTime()));
+            dateTV.setText(messageModel.getMessageTime().toDate().toString());
         }
     }
 }
