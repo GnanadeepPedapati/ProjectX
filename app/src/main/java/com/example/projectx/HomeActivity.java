@@ -9,20 +9,11 @@ import androidx.fragment.app.FragmentManager;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.media.Image;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.OpenableColumns;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-
-import java.io.IOException;
 
 import lombok.NonNull;
 
@@ -43,12 +34,12 @@ public class HomeActivity extends AppCompatActivity {
         requestStoragePermission();
         Fragment homeFragment = HomeFragment.newInstance();
         Fragment requestsFragment = RequestsListFragment.newInstance("1", "2");
-        Fragment responsesFragment = ResponsesListFragment.newInstance("1", "2");
+        Fragment incomingListFragment = IncomingListFragment.newInstance("1", "2");
         active = homeFragment;
         final FragmentManager fm = getSupportFragmentManager();
 
         fm.beginTransaction().add(R.id.main_container, requestsFragment, "3").hide(requestsFragment).commit();
-        fm.beginTransaction().add(R.id.main_container, responsesFragment, "2").hide(responsesFragment).commit();
+        fm.beginTransaction().add(R.id.main_container, incomingListFragment, "2").hide(incomingListFragment).commit();
         fm.beginTransaction().add(R.id.main_container, homeFragment, "1").commit();
 
 
@@ -70,8 +61,8 @@ public class HomeActivity extends AppCompatActivity {
                         return true;
 
                     case R.id.incoming:
-                        fm.beginTransaction().hide(active).show(responsesFragment).commit();
-                        active = responsesFragment;
+                        fm.beginTransaction().hide(active).show(incomingListFragment).commit();
+                        active = incomingListFragment;
                         return true;
 
                 }

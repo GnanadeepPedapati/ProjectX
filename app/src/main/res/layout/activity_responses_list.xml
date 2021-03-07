@@ -5,18 +5,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@color/white"
     tools:context=".ResponsesListActivity">
     <TextView android:layout_height="wrap_content"
         android:layout_width="match_parent"
         android:textStyle="bold"
         android:textSize="30dp"
+        android:id="@+id/request_text_heading"
         android:padding="8dp"
         android:background ="#2B60DE"
         android:textColor="@color/white"
         android:text="I need tenaximic acid 500ml, Please share the details of shop"/>
 
     <ListView
-        android:id="@+id/responses_list_item"
+        android:id="@+id/incoming_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"></ListView>
 

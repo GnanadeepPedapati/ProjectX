@@ -1,15 +1,18 @@
 package com.example.projectx;
 
-import androidx.annotation.NonNull;
-
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.example.projectx.model.MessageModel;
 import com.example.projectx.model.ResponseOverview;
@@ -29,45 +32,89 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.Objects;
 
-public class ResponsesListActivity extends Activity {
+/**
+ * A simple {@link Fragment} subclass.
+ * Use the {@link IncomingListFragment#newInstance} factory method to
+ * create an instance of this fragment.
+ */
+public class IncomingListFragment extends Fragment {
 
-    ArrayList<ResponseOverview> responseOverviews = new ArrayList<>();
+    // TODO: Rename parameter arguments, choose names that match
+    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+    private static final String ARG_PARAM1 = "param1";
+    private static final String ARG_PARAM2 = "param2";
     ResponseListAdapter responseListAdapter;
 
+    ArrayList<ResponseOverview> responseOverviews = new ArrayList<>();
+
+    // TODO: Rename and change types of parameters
+    private String mParam1;
+    private String mParam2;
+
+    public IncomingListFragment() {
+        // Required empty public constructor
+    }
+
+    /**
+     * Use this factory method to create a new instance of
+     * this fragment using the provided parameters.
+     *
+     * @param param1 Parameter 1.
+     * @param param2 Parameter 2.
+     * @return A new instance of fragment ResponsesListFragment.
+     */
+    // TODO: Rename and change types and number of parameters
+    public static IncomingListFragment newInstance(String param1, String param2) {
+        IncomingListFragment fragment = new IncomingListFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_PARAM1, param1);
+        args.putString(ARG_PARAM2, param2);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_responses_list);
+        if (getArguments() != null) {
+            mParam1 = getArguments().getString(ARG_PARAM1);
+            mParam2 = getArguments().getString(ARG_PARAM2);
+        }
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_incoming_list, container, false);
+    }
 
 
-        String requestId = getIntent().getStringExtra("requestId");
-        String requestText = getIntent().getStringExtra("requestText");
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
 
-        TextView requestHeading = findViewById(R.id.request_text_heading);
-        requestHeading.setText(requestText);
-        ListView responsesList = (ListView) findViewById(R.id.incoming_list);
-        getData(requestId);
-
-        responseListAdapter = new ResponseListAdapter(getApplicationContext(), responseOverviews);
+        ListView responsesList = (ListView) getView().findViewById(R.id.incoming_list);
+        getData();
+        responseListAdapter = new ResponseListAdapter(getActivity().getApplicationContext(), responseOverviews);
         responsesList.setAdapter(responseListAdapter);
         responsesList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 ResponseOverview responseOverview = responseOverviews.get(position);
-                Intent intent = new Intent(ResponsesListActivity.this, ChatActivity.class);
+                Intent intent = new Intent(getContext(), ChatActivity.class);
                 intent.putExtra("otherUser", responseOverview.getOtherUser());
                 startActivity(intent);
             }
         });
+
     }
 
-
-    public void getData(String requestId) {
+    private void getData() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         CollectionReference usrRef = db.collection("UserRequests");
         DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference().child("Chats");
 
-        Query query = usrRef.whereEqualTo("requestId", requestId).whereEqualTo("hasReplied", true);
+        Query query = usrRef.whereEqualTo("receiver", UserDetailsUtil.getUID());
         query.get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
@@ -75,12 +122,12 @@ public class ResponsesListActivity extends Activity {
                         if (task.isSuccessful()) {
                             for (UserRequests userRequest : task.getResult().toObjects(UserRequests.class)) {
                                 ResponseOverview responseOverview = new ResponseOverview();
-                                responseOverview.setEntityName(userRequest.getReceiver());
-                                responseOverview.setOtherUser(userRequest.getReceiver());
+                                responseOverview.setEntityName(userRequest.getSender());
+                                responseOverview.setOtherUser(userRequest.getSender());
                                 responseOverviews.add(responseOverview);
                                 responseListAdapter.notifyDataSetChanged();
                                 String loggedInUser = UserDetailsUtil.getUID();
-                                String chatId = UserDetailsUtil.generateChatId(loggedInUser, userRequest.getReceiver());
+                                String chatId = UserDetailsUtil.generateChatId(loggedInUser, userRequest.getSender());
 
                                 mDatabase.child(chatId).child("unseenCount" + loggedInUser).addValueEventListener(new ValueEventListener() {
                                     @Override
@@ -119,7 +166,7 @@ public class ResponsesListActivity extends Activity {
                                     }
                                 });
 
-
+    
                             }
 
 
@@ -129,4 +176,5 @@ public class ResponsesListActivity extends Activity {
                     }
                 });
     }
+
 }
