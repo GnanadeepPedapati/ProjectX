@@ -13,16 +13,25 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.projectx.model.Requests;
+import com.example.projectx.model.UserDetails;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static android.content.ContentValues.TAG;
 
 public class SignInActivity extends Activity implements View.OnClickListener {
 
@@ -86,6 +95,7 @@ public class SignInActivity extends Activity implements View.OnClickListener {
             if (resultCode == RESULT_OK) {
                 // Successfully signed in
                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                insertToFirebase(user);
                 Log.d("Result", "onActivityResult: Success");
                 Toast.makeText(this, "LoggedIn", Toast.LENGTH_LONG).show();
                 postLogin();
@@ -99,6 +109,43 @@ public class SignInActivity extends Activity implements View.OnClickListener {
             }
         }
     }
+
+    private void insertToFirebase(FirebaseUser user) {
+
+        String displayName = user.getDisplayName();
+        String email = user.getEmail();
+        String uid = user.getUid();
+
+
+        UserDetails userDetails = new UserDetails(uid, displayName, email);
+        saveToFireStore(userDetails);
+
+    }
+
+
+    public void saveToFireStore(UserDetails userDetails) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("UserDetails")
+                .document(userDetails.getUid())
+                .set(userDetails, SetOptions.merge())
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d("Insert", "DocumentSnapshot successfully written!");
+
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error writing document", e);
+                    }
+                });
+        ;
+
+    }
+
 
     @Override
     public void onClick(View v) {
@@ -133,7 +180,7 @@ public class SignInActivity extends Activity implements View.OnClickListener {
 
 
     private void postLogin() {
-        Intent i = new Intent(SignInActivity.this, ChatActivity.class);
+        Intent i = new Intent(SignInActivity.this, HomeActivity.class);
         startActivity(i);
     }
 
