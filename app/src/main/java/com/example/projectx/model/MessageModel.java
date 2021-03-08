@@ -15,9 +15,7 @@ public class MessageModel {
     private String message;
     private String sender;
     private boolean seen;
-    private Timestamp messageTime;
-
-  public   MessageModel(){}
+    private String messageTime;
 
 
 }

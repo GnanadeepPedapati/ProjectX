@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import lombok.SneakyThrows;
 
 import com.bumptech.glide.Glide;
 import com.example.projectx.model.MessageModel;
@@ -23,7 +24,10 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -53,6 +57,7 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         return new LeftChatBubbleViewHolder(LayoutInflater.from(context).inflate(R.layout.chat_left_bubble, parent, false));
     }
 
+    @SneakyThrows
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (list.get(position).getSender().equals(user)) {
@@ -96,7 +101,7 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
         }
 
-        void bind(int position) {
+        void bind(int position) throws ParseException {
             MessageModel messageModel = list.get(position);
             String messageText = messageModel.getMessage();
             if (!messageText.contains("images")) {
@@ -117,7 +122,14 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
             }
 //            Timestamp ts = new Timestamp();
-            dateTV.setText(messageModel.getMessageTime().toDate().toString());
+            if(messageModel.getMessageTime() != null) {
+                SimpleDateFormat sfd = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss a");
+                Date date = sfd.parse(messageModel.getMessageTime());
+                sfd = new SimpleDateFormat("HH:mm a");
+               String text =  sfd.format(date);
+//                String date = sfd.format(new Date(messageModel.getMessageTime()).getTime());
+                dateTV.setText(text);
+            }
 
 
             imageView.setOnClickListener(new View.OnClickListener() {
@@ -147,7 +159,7 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
 
 
-        void bind(int position) {
+        void bind(int position) throws ParseException {
             MessageModel messageModel = list.get(position);
             String messageText = messageModel.getMessage();
             if (!messageText.contains("images"))
@@ -160,7 +172,14 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                         .into(imageView);
 
             }
-            dateTV.setText(messageModel.getMessageTime().toDate().toString());
+            if(messageModel.getMessageTime() != null) {
+                SimpleDateFormat sfd = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss a");
+                Date date = sfd.parse(messageModel.getMessageTime());
+                sfd = new SimpleDateFormat("HH:mm a");
+                String text =  sfd.format(date);
+//                String date = sfd.format(new Date(messageModel.getMessageTime()).getTime());
+                dateTV.setText(text);
+            }
         }
     }
 }

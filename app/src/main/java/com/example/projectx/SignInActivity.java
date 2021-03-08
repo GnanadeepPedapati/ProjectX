@@ -133,7 +133,7 @@ public class SignInActivity extends Activity implements View.OnClickListener {
 
 
     private void postLogin() {
-        Intent i = new Intent(SignInActivity.this, ChatActivity.class);
+        Intent i = new Intent(SignInActivity.this, HomeActivity.class);
         startActivity(i);
     }
 

@@ -25,8 +25,12 @@ import com.google.firebase.database.*;
 
 import com.example.projectx.model.MessageModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.firestore.FieldValue;
+import com.google.type.DateTime;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
 
@@ -65,6 +69,7 @@ public class ChatActivity extends AppCompatActivity {
 
         displayMessage();
         mDatabase = FirebaseDatabase.getInstance().getReference().child("Chats");
+
         addPostEventListener(mDatabase);
 //        FirebaseAuth.getInstance()
 //                .getCurrentUser()
@@ -73,9 +78,11 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 EditText edit = (EditText) findViewById(R.id.input);
-
                 if (!edit.getText().toString().trim().equals("")) {
-                    MessageModel messageModel = new MessageModel(edit.getText().toString().trim(), loggedInUser, false,Timestamp.now());
+                    Date date = new Date();
+                    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss a");
+                    String dateAndTime = formatter.format(date);
+                    MessageModel messageModel = new MessageModel(edit.getText().toString().trim(), loggedInUser, false, dateAndTime);
                     mDatabase.child(ChatActivity.this.chatId).child("messages").push().setValue(messageModel);
                     mDatabase.child(ChatActivity.this.chatId).child("lastMessage").setValue(messageModel);
 
@@ -139,7 +146,7 @@ public class ChatActivity extends AppCompatActivity {
                 Log.d("firebase", "child child");
                 // A new comment has been added, add it to the displayed list
                 MessageModel msg = dataSnapshot.getValue(MessageModel.class);
-                messagesList.add(msg);
+                        messagesList.add(msg);
                 adapter.notifyDataSetChanged();
                 recyclerView.scrollToPosition(messagesList.size() - 1);
                 mPostReference.child(chatId).child("unseenCount" + loggedInUser).setValue(0);
