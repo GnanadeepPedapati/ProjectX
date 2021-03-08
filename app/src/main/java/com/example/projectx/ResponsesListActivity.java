@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.example.projectx.model.MessageModel;
 import com.example.projectx.model.ResponseOverview;
+import com.example.projectx.model.UserDetails;
 import com.example.projectx.model.UserRequests;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -22,6 +23,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -82,6 +85,8 @@ public class ResponsesListActivity extends Activity {
                                 String loggedInUser = UserDetailsUtil.getUID();
                                 String chatId = UserDetailsUtil.generateChatId(loggedInUser, userRequest.getReceiver());
 
+                                getDisplayName(responseOverview, userRequest.getReceiver());
+
                                 mDatabase.child(chatId).child("unseenCount" + loggedInUser).addValueEventListener(new ValueEventListener() {
                                     @Override
                                     public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -128,5 +133,30 @@ public class ResponsesListActivity extends Activity {
                         }
                     }
                 });
+    }
+
+
+    private void getDisplayName(ResponseOverview responseOverview, String uid) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        DocumentReference docRef = db.collection("UserDetails").document(uid);
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        UserDetails userDetails = document.toObject(UserDetails.class);
+                        responseOverview.setEntityName(userDetails.getDisplayName());
+                        responseListAdapter.notifyDataSetChanged();
+                        Log.d("Inert", "DocumentSnapshot data: " + document.getData());
+                    } else {
+                        Log.d("Inert", "No such document");
+                    }
+                } else {
+                    Log.d("Inert", "get failed with ", task.getException());
+                }
+            }
+        });
     }
 }
