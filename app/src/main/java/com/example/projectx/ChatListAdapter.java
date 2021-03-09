@@ -38,6 +38,7 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     FirebaseStorage storage;
     StorageReference storageReference;
+//    private final View.OnClickListener mOnClickListener = new MyOnClickListener();
 
     public ChatListAdapter(Context context, ArrayList<MessageModel> list, String user) { // you can pass other parameters in constructor
         this.context = context;
@@ -51,10 +52,13 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view;
         if (viewType == 1) {
-            return new RightChatBubbleViewHolder(LayoutInflater.from(context).inflate(R.layout.chat_right_bubble, parent, false));
+             view = LayoutInflater.from(context).inflate(R.layout.chat_right_bubble, parent, false);
+             return new RightChatBubbleViewHolder(view);
         }
-        return new LeftChatBubbleViewHolder(LayoutInflater.from(context).inflate(R.layout.chat_left_bubble, parent, false));
+        view = LayoutInflater.from(context).inflate(R.layout.chat_left_bubble, parent, false);
+        return new LeftChatBubbleViewHolder(view);
     }
 
     @SneakyThrows
@@ -89,7 +93,7 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     private class RightChatBubbleViewHolder extends RecyclerView.ViewHolder {
 
-        TextView messageTV, dateTV;
+        TextView messageTV, dateTV,timeView;
         ImageView imageView;
 
         RightChatBubbleViewHolder(final View itemView) {
@@ -97,13 +101,26 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             messageTV = itemView.findViewById(R.id.message_text);
             dateTV = itemView.findViewById(R.id.date_text);
             imageView = itemView.findViewById(R.id.message_image);
-
-
+            timeView = itemView.findViewById(R.id.message_time);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if(timeView.getVisibility() == View.GONE){
+                        timeView.setVisibility(View.VISIBLE);
+                    }
+                    else{
+                        timeView.setVisibility(View.GONE);
+                    }
+                }
+            });
         }
 
         void bind(int position) throws ParseException {
             MessageModel messageModel = list.get(position);
             String messageText = messageModel.getMessage();
+            if(timeView.getVisibility() != View.GONE){
+                timeView.setVisibility(View.GONE);
+            }
             if (!messageText.contains("images")) {
                 messageTV.setText(messageText);
                 //Some issue with recyler view - so we need to set all visiblity and gone pro[erly
@@ -125,12 +142,19 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             if(messageModel.getMessageTime() != null) {
                 SimpleDateFormat sfd = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss a");
                 Date date = sfd.parse(messageModel.getMessageTime());
-                sfd = new SimpleDateFormat("HH:mm a");
-               String text =  sfd.format(date);
-//                String date = sfd.format(new Date(messageModel.getMessageTime()).getTime());
-                dateTV.setText(text);
-            }
+                SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMdd");
+                if(sdf1.format(date).compareTo(sdf1.format(new Date())) <0){
+                    sfd = new SimpleDateFormat("dd/MM/yyyy HH:mm a");
+                }
+                else{
+                    sfd = new SimpleDateFormat("HH:mm a");
+                }
 
+                String text =  sfd.format(date);
+//                String date = sfd.format(new Date(messageModel.getMessageTime()).getTime());
+//                dateTV.setText(text);
+                timeView.setText(text);
+            }
 
             imageView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -147,7 +171,7 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     private class LeftChatBubbleViewHolder extends RecyclerView.ViewHolder {
 
-        TextView messageTV, dateTV;
+        TextView messageTV, dateTV,timeView;
         ImageView imageView;
 
         LeftChatBubbleViewHolder(final View itemView) {
@@ -155,6 +179,22 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             messageTV = itemView.findViewById(R.id.message_text);
             dateTV = itemView.findViewById(R.id.date_text);
             imageView = itemView.findViewById(R.id.message_image);
+
+            timeView = itemView.findViewById(R.id.message_time);
+            timeView.setVisibility(View.GONE);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if(timeView.getVisibility() == View.GONE){
+                        timeView.setVisibility(View.VISIBLE);
+                    }
+                    else{
+                        timeView.setVisibility(View.GONE);
+                    }
+
+                }
+            });
+
 
         }
 
@@ -175,10 +215,18 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             if(messageModel.getMessageTime() != null) {
                 SimpleDateFormat sfd = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss a");
                 Date date = sfd.parse(messageModel.getMessageTime());
-                sfd = new SimpleDateFormat("HH:mm a");
+                SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMdd");
+                if(sdf1.format(date).compareTo(sdf1.format(new Date())) >0){
+                    sfd = new SimpleDateFormat("dd/MM/yyyy HH:mm a");
+                }
+                else{
+                    sfd = new SimpleDateFormat("HH:mm a");
+                }
+
                 String text =  sfd.format(date);
 //                String date = sfd.format(new Date(messageModel.getMessageTime()).getTime());
-                dateTV.setText(text);
+//                dateTV.setText(text);
+                timeView.setText(text);
             }
         }
     }
