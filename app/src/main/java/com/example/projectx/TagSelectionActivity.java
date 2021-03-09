@@ -27,15 +27,21 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
+import com.google.common.collect.ImmutableMap;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
@@ -44,6 +50,7 @@ import static android.content.ContentValues.TAG;
 public class TagSelectionActivity extends AppCompatActivity {
 
     EditText tagsFilter;
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     private List<String> selectedTags = new ArrayList<>();
     private List<String> sourceTags = new ArrayList<>(
@@ -55,7 +62,7 @@ public class TagSelectionActivity extends AppCompatActivity {
         setContentView(R.layout.activity_tag_selection);
         setSourceTags(sourceTags);
 
-
+        getTags();
         tagsFilter = findViewById(R.id.filterTags);
         Button tagSelectionContinue = findViewById(R.id.tagSelectionContinue);
 
@@ -87,13 +94,38 @@ public class TagSelectionActivity extends AppCompatActivity {
 
     }
 
+    private void getTags() {
+
+        db.collection("Tags")
+
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Log.d(TAG, document.getId() + " => " + document.getData());
+                                sourceTags.add(document.getId());
+                                addTagToSourceGroup(document.getId());
+                            }
+                        } else {
+                            Log.d(TAG, "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
+
+    }
+
 
     private void assignTagsToUser() {
         String uid = UserDetailsUtil.getUID();
 
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         DocumentReference documentReference = db.collection("UserDetails").document(uid);
+        for (String tag : selectedTags) {
+            assignUserToTag(tag, uid);
+        }
+
         documentReference.update("tags", selectedTags).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
@@ -108,6 +140,30 @@ public class TagSelectionActivity extends AppCompatActivity {
                         Log.d("firestore", "Error writing document", e);
                     }
                 });
+
+    }
+
+    private void assignUserToTag(String tag, String uid) {
+        DocumentReference tagRef = db.collection("Tags").document(tag);
+
+        tagRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        Log.d(TAG, "DocumentSnapshot data: " + document.getData());
+                        tagRef.update("users", FieldValue.arrayUnion(uid));
+
+                    } else {
+                        tagRef.set(ImmutableMap.of("users", Collections.singletonList(uid)));
+                    }
+                } else {
+                    Log.d(TAG, "get failed with ", task.getException());
+                }
+            }
+        });
+
 
     }
 
@@ -176,7 +232,7 @@ public class TagSelectionActivity extends AppCompatActivity {
 
         for (int index = 0; index < tagList.size(); index++) {
             final String tagName = tagList.get(index);
-            addTagToSourceGroup(tagName);
+            //addTagToSourceGroup(tagName);
         }
     }
 
