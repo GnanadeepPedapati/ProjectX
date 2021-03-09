@@ -42,7 +42,7 @@ public class MainActivity extends Activity {
                 boolean userLoggedIn = UserDetailsUtil.isUserLoggedIn();
                 Class targetClass;
                 if (userLoggedIn)
-                    targetClass = TagSelectionActivity.class;
+                    targetClass = HomeActivity.class;
                 else
                     targetClass = SignInActivity.class;
 

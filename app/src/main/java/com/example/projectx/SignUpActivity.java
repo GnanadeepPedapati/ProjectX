@@ -224,8 +224,9 @@ public class SignUpActivity extends AppCompatActivity {
 
                             } else {
                                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
                                 insertToFirebase(user);
-                                Toast.makeText(SignUpActivity.this, "Success", Toast.LENGTH_LONG).show();
+                                Toast.makeText(SignUpActivity.this, "Success"+user.getDisplayName(), Toast.LENGTH_LONG).show();
                             }
                         }
                     });
