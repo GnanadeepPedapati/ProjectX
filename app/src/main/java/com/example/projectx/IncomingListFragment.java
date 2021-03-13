@@ -33,7 +33,9 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -117,6 +119,10 @@ public class IncomingListFragment extends Fragment {
         CollectionReference usrRef = db.collection("UserRequests");
         DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference().child("Chats");
 
+
+        Set<String> senderSet = new HashSet<String>();
+
+
         Query query = usrRef.whereEqualTo("receiver", UserDetailsUtil.getUID());
         query.get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -124,53 +130,56 @@ public class IncomingListFragment extends Fragment {
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
                             for (UserRequests userRequest : task.getResult().toObjects(UserRequests.class)) {
-                                ResponseOverview responseOverview = new ResponseOverview();
-                                responseOverview.setEntityName(userRequest.getSender());
-                                responseOverview.setOtherUser(userRequest.getSender());
-                                responseOverviews.add(responseOverview);
-                                getDisplayName(responseOverview, userRequest.getSender());
-                                responseListAdapter.notifyDataSetChanged();
-                                String loggedInUser = UserDetailsUtil.getUID();
-                                String chatId = UserDetailsUtil.generateChatId(loggedInUser, userRequest.getSender());
+                                if (!senderSet.contains(userRequest.getSender())) {
+                                    ResponseOverview responseOverview = new ResponseOverview();
+                                    senderSet.add(userRequest.getSender());
+                                    responseOverview.setEntityName(userRequest.getSender());
+                                    responseOverview.setOtherUser(userRequest.getSender());
+                                    responseOverviews.add(responseOverview);
+                                    getDisplayName(responseOverview, userRequest.getSender());
+                                    responseListAdapter.notifyDataSetChanged();
+                                    String loggedInUser = UserDetailsUtil.getUID();
+                                    String chatId = UserDetailsUtil.generateChatId(loggedInUser, userRequest.getSender());
 
-                                mDatabase.child(chatId).child("unseenCount" + loggedInUser).addValueEventListener(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                        Integer lastUnseenCount = snapshot.getValue(Integer.class);
+                                    mDatabase.child(chatId).child("unseenCount" + loggedInUser).addValueEventListener(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                            Integer lastUnseenCount = snapshot.getValue(Integer.class);
 
-                                        if (Objects.nonNull(lastUnseenCount)) {
-                                            responseOverview.setNewMessageCount(lastUnseenCount.toString());
-                                            responseListAdapter.notifyDataSetChanged();
+                                            if (Objects.nonNull(lastUnseenCount)) {
+                                                responseOverview.setNewMessageCount(lastUnseenCount.toString());
+                                                responseListAdapter.notifyDataSetChanged();
+                                            }
+
                                         }
 
-                                    }
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError error) {
 
-                                    @Override
-                                    public void onCancelled(@NonNull DatabaseError error) {
-
-                                    }
-                                });
-
-
-                                mDatabase.child(chatId).child("lastMessage").addValueEventListener(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-
-                                        MessageModel lastmessage = snapshot.getValue(MessageModel.class);
-                                        if (Objects.nonNull(lastmessage)) {
-                                            responseOverview.setLastMessage(lastmessage.getMessage());
-                                            // responseOverview.setLastReceivedTime(lastmessage.getMessageTime().toDate().toString());
-                                            responseListAdapter.notifyDataSetChanged();
                                         }
-                                    }
-
-                                    @Override
-                                    public void onCancelled(@NonNull DatabaseError error) {
-
-                                    }
-                                });
+                                    });
 
 
+                                    mDatabase.child(chatId).child("lastMessage").addValueEventListener(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                                            MessageModel lastmessage = snapshot.getValue(MessageModel.class);
+                                            if (Objects.nonNull(lastmessage)) {
+                                                responseOverview.setLastMessage(lastmessage.getMessage());
+                                                // responseOverview.setLastReceivedTime(lastmessage.getMessageTime().toDate().toString());
+                                                responseListAdapter.notifyDataSetChanged();
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError error) {
+
+                                        }
+                                    });
+
+
+                                }
                             }
 
 

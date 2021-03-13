@@ -37,6 +37,8 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
 
+import static android.content.ContentValues.TAG;
+
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link HomeFragment#newInstance} factory method to
@@ -156,12 +158,13 @@ public class HomeFragment extends Fragment {
     public void saveToFireStore(Requests req) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        db.collection("Requests")
-                .add(req)
-                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+        db.collection("Requests").
+                document(req.getRequestId())
+                .set(req)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
-                    public void onSuccess(DocumentReference documentReference) {
-                        Log.d("firestore", "DocumentSnapshot successfully written!");
+                    public void onSuccess(Void aVoid) {
+                        Log.d(TAG, "DocumentSnapshot successfully written!");
                         searchText.setText("");
                         Toast.makeText(getContext(), "Submitted Request", Toast.LENGTH_LONG).show();
                     }
@@ -169,10 +172,11 @@ public class HomeFragment extends Fragment {
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Log.d("firestore", "Error writing document", e);
+                        Log.w(TAG, "Error writing document", e);
                     }
                 });
     }
+
 
     private void uploadImageAndSubmitRequest(String requestText) {
         if (filePath != null) {
