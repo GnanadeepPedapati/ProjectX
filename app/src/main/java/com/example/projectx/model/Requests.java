@@ -16,7 +16,7 @@ public class Requests {
     String Request;
     String ImageUrl;
     String CreatedBy;
-    Timestamp CreatedAt;
+    private String CreatedAt;
     boolean tagsAssigned;
 
 }

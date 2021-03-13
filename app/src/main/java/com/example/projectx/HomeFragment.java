@@ -33,6 +33,7 @@ import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
@@ -146,11 +147,15 @@ public class HomeFragment extends Fragment {
     public void saveReq(String text, String imageUrl) {
         Requests request = new Requests();
 
+        Date date = new Date();
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss a");
+        String dateAndTime = formatter.format(date);
+
         request.setRequest(text);
         request.setImageUrl(imageUrl);
         request.setCreatedBy(UserDetailsUtil.getUID());
         request.setRequestId(UUID.randomUUID().toString());
-        request.setCreatedAt(Timestamp.now());
+        request.setCreatedAt(dateAndTime);
         saveToFireStore(request);
 
     }

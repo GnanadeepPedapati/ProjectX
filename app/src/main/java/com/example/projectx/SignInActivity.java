@@ -182,6 +182,7 @@ public class SignInActivity extends Activity implements View.OnClickListener {
     private void postLogin() {
         Intent i = new Intent(SignInActivity.this, HomeActivity.class);
         startActivity(i);
+        finish();
     }
 
     // [END auth_fui_result]

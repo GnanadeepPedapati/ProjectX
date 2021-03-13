@@ -9,7 +9,11 @@ import android.widget.TextView;
 
 import com.example.projectx.model.businessmodels.RequestListModel;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+
+import lombok.SneakyThrows;
 
 public class RequestListAdapter extends BaseAdapter {
 
@@ -37,6 +41,7 @@ public class RequestListAdapter extends BaseAdapter {
         return position;
     }
 
+    @SneakyThrows
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         // inflate the layout for each list row
@@ -59,7 +64,24 @@ public class RequestListAdapter extends BaseAdapter {
         responsesCount.setText(String.valueOf(requestListModel.getResponsesCount())+" Responses");
         //sets the text for item name and item description from the current item object
         requestText.setText(requestListModel.getRequest());
-        createDate.setText(requestListModel.getCreatedAt().toDate().toString());
+        if(requestListModel.getCreatedAt() != null && requestListModel.getCreatedAt() != "") {
+            SimpleDateFormat sfd = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss a");
+            Date date = sfd.parse(requestListModel.getCreatedAt());
+            SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMdd");
+            if(sdf1.format(date).compareTo(sdf1.format(new Date())) >0){
+                sfd = new SimpleDateFormat("dd/MM/yyyy HH:mm a");
+            }
+            else{
+                sfd = new SimpleDateFormat("HH:mm a");
+            }
+
+            String text =  sfd.format(date);
+//                String date = sfd.format(new Date(messageModel.getMessageTime()).getTime());
+//                dateTV.setText(text);
+            createDate.setText(text);
+        }
+
+//        createDate.setText(requestListModel.getCreatedAt().toDate().toString());
 
         // returns the view for the current row
         return convertView;

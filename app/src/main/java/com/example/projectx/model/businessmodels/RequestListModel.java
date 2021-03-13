@@ -13,7 +13,7 @@ public class RequestListModel {
     String Request;
     String ImageUrl;
     String CreatedBy;
-    Timestamp CreatedAt;
+    String CreatedAt;
     int responsesCount;
 
 }
