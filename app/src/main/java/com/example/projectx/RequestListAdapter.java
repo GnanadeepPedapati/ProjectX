@@ -1,17 +1,24 @@
 package com.example.projectx;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.example.projectx.model.businessmodels.RequestListModel;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import lombok.SneakyThrows;
 
@@ -19,11 +26,14 @@ public class RequestListAdapter extends BaseAdapter {
 
     private Context context;
     private List<RequestListModel> listItems;
+    StorageReference storageReference;
 
     RequestListAdapter(Context context, List<RequestListModel> listItems) {
 
         this.context = context;
         this.listItems = listItems;
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        storageReference = storage.getReference();
     }
 
     @Override
@@ -60,8 +70,49 @@ public class RequestListAdapter extends BaseAdapter {
                 convertView.findViewById(R.id.request_create_time);
         TextView responsesCount = (TextView)
                 convertView.findViewById(R.id.responses_count);
+        responsesCount.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(context, ResponsesListActivity.class);
+                intent.putExtra("requestId", requestListModel.getRequestId());
+                intent.putExtra("requestText", requestListModel.getRequest());
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                Toast.makeText(context, requestListModel.getRequestId(), Toast.LENGTH_LONG).show();
+                context.startActivity(intent);
+            }
+        });
+        View expandButton = convertView.findViewById(R.id.request_heading);
+        ImageView expandedImageView = convertView.findViewById(R.id.expanded_image_view);
 
-        responsesCount.setText(String.valueOf(requestListModel.getResponsesCount())+" Responses");
+        ImageView imageView = (ImageView) convertView.findViewById(R.id.bitmap_image);
+        if (Objects.nonNull(requestListModel.getImageUrl()) && requestListModel.getImageUrl() != "") {
+            StorageReference imageStorage = storageReference.child(requestListModel.getImageUrl());
+            imageView.setVisibility(View.VISIBLE);
+            expandButton.setVisibility(View.VISIBLE);
+            Glide.with(context)
+                    .load(imageStorage)
+                    .into(imageView);
+            Glide.with(context)
+                    .clear(expandedImageView);
+        }
+        expandButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (Objects.nonNull(requestListModel.getImageUrl()) && requestListModel.getImageUrl() != "") {
+
+                    StorageReference imageStorage = storageReference.child(requestListModel.getImageUrl());
+                    imageView.setVisibility(View.GONE);
+                    Glide.with(context).clear(imageView);
+                    expandedImageView.setVisibility(View.VISIBLE);
+                    Glide.with(context)
+                            .load(imageStorage)
+                            .into(expandedImageView);
+                }
+            }
+        });
+
+
+        responsesCount.setText(String.valueOf(requestListModel.getResponsesCount()) + " Responses");
         //sets the text for item name and item description from the current item object
         requestText.setText(requestListModel.getRequest());
         if(requestListModel.getCreatedAt() != null && requestListModel.getCreatedAt() != "") {
