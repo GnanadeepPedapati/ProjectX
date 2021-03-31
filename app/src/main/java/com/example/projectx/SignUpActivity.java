@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -31,6 +32,7 @@ import com.google.android.material.textview.MaterialTextView;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
 
@@ -46,12 +48,8 @@ import static android.content.ContentValues.TAG;
 
 public class SignUpActivity extends AppCompatActivity {
     private FirebaseAuth auth;
-    EditText emailInput, passwordInput, confirmPasswordInput;
-    EditText tagsFilter;
+    EditText emailInput, passwordInput, confirmPasswordInput, nameInput;
 
-    private List<String> selectedTags = new ArrayList<>();
-    private List<String> sourceTags = new ArrayList<>(
-            Arrays.asList("Apple", "Orange", "Bat", "Buffalo", "Pig", "Peacock", "Pigeon", "Parrot", "Ox", "Owl", "Tiger", "Lion", "Frog"));
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,119 +58,31 @@ public class SignUpActivity extends AppCompatActivity {
         emailInput = findViewById(R.id.signUpEmail);
         passwordInput = findViewById(R.id.signUpPassword);
         confirmPasswordInput = findViewById(R.id.confirmPassword);
+        nameInput = findViewById(R.id.name_Input);
         auth = FirebaseAuth.getInstance();
 
-        setSourceTags(sourceTags);
 
         Button signUpButton = findViewById(R.id.createAccount);
         signUpButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                displayToast(selectedTags.toString());
-                //createUserWithEmailPassword();
+                createUserWithEmailPassword();
             }
         });
 
-        tagsFilter = findViewById(R.id.filterTags);
-        tagsFilter.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void afterTextChanged(Editable s) {
-                // TODO Auto-generated method stub
-            }
-
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                // TODO Auto-generated method stub
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                List<String> collect = sourceTags.stream().filter(sourceTag -> sourceTag.toLowerCase().contains(s.toString().toLowerCase())).collect(Collectors.toList());
-                final ChipGroup chipGroup = findViewById(R.id.tag_group);
-                chipGroup.removeAllViews();
-                setSourceTags(collect);
-            }
-        });
     }
 
 
-    private void addTagToSelection(String tagName) {
+    private void insertToFirebase(FirebaseUser user, String name) {
 
-        final ChipGroup chipGroup = findViewById(R.id.selected_tags);
-
-        final Chip chip = new Chip(this);
-        int paddingDp = (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, 10,
-                getResources().getDisplayMetrics()
-        );
-        chip.setPadding(paddingDp, paddingDp, paddingDp, paddingDp);
-        chip.setText(tagName);
-        chip.setChecked(true);
-        chip.setCloseIconVisible(true);
-        chip.setChipBackgroundColor(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.teal_200)));
-
-        //Added click listener on close icon to remove tag from ChipGroup
-        chip.setOnCloseIconClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                chipGroup.removeView(chip);
-                selectedTags.remove(tagName);
-                sourceTags.add(tagName);
-                addTagToSourceGroup(tagName);
-            }
-        });
-
-        chipGroup.addView(chip);
-
-    }
-
-    private void addTagToSourceGroup(String tagName) {
-        final ChipGroup chipGroup = findViewById(R.id.tag_group);
-        final Chip chip = new Chip(this);
-        int paddingDp = (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, 10,
-                getResources().getDisplayMetrics()
-        );
-        chip.setPadding(paddingDp, paddingDp, paddingDp, paddingDp);
-        chip.setText(tagName);
-        chip.setChecked(true);
-        Random rnd = new Random();
-        int color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
-        chip.setChipBackgroundColor(ColorStateList.valueOf(color));
-        chip.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String text = ((Chip) v).getText().toString();
-                selectedTags.add(text);
-                sourceTags.remove(text);
-                addTagToSelection(text);
-                chipGroup.removeView(chip);
-            }
-        });
-
-
-        chip.setCloseIconVisible(false);
-        chipGroup.addView(chip);
-    }
-
-
-    private void setSourceTags(final List<String> tagList) {
-
-        for (int index = 0; index < tagList.size(); index++) {
-            final String tagName = tagList.get(index);
-            addTagToSourceGroup(tagName);
-        }
-    }
-
-
-    private void insertToFirebase(FirebaseUser user) {
-
-        String displayName = user.getDisplayName();
         String email = user.getEmail();
         String uid = user.getUid();
 
 
-        UserDetails userDetails = new UserDetails(uid, displayName, email);
+        UserDetails userDetails = new UserDetails();
+        userDetails.setEmail(email);
+        userDetails.setUid(uid);
+        userDetails.setDisplayName(name);
         saveToFireStore(userDetails);
 
     }
@@ -203,10 +113,11 @@ public class SignUpActivity extends AppCompatActivity {
 
     private void createUserWithEmailPassword() {
 
+        String name = nameInput.getText().toString();
         String email = emailInput.getText().toString();
         String password = passwordInput.getText().toString();
         String confirmPassword = confirmPasswordInput.getText().toString();
-        if (TextUtils.isEmpty(password) || TextUtils.isEmpty(confirmPassword) || TextUtils.isEmpty(email))
+        if (TextUtils.isEmpty(password) || TextUtils.isEmpty(confirmPassword) || TextUtils.isEmpty(email) || TextUtils.isEmpty(name))
             displayToast("Required Fields missing");
 
         else if (!isEmailValid(email))
@@ -215,6 +126,11 @@ public class SignUpActivity extends AppCompatActivity {
             displayToast("Passwords don't match");
 
         else {
+
+            UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                    .setDisplayName("Jane Q. User")
+                    .build();
+
             auth.createUserWithEmailAndPassword(email, password)
                     .addOnCompleteListener(SignUpActivity.this, new OnCompleteListener<AuthResult>() {
                         public void onComplete(@NonNull Task<AuthResult> task) {
@@ -225,17 +141,41 @@ public class SignUpActivity extends AppCompatActivity {
                             } else {
                                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-                                insertToFirebase(user);
-                                Toast.makeText(SignUpActivity.this, "Success"+user.getDisplayName(), Toast.LENGTH_LONG).show();
+                                updateUserWithDisplayName(user, name);
+                                insertToFirebase(user, name);
+                                Toast.makeText(SignUpActivity.this, "Success" + user.getDisplayName(), Toast.LENGTH_LONG).show();
+                                goToBusinessActivity();
                             }
                         }
                     });
         }
     }
 
+    private void goToBusinessActivity() {
+        Intent intent = new Intent(getApplicationContext(), BusinessActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+
+    private void updateUserWithDisplayName(FirebaseUser user, String name) {
+        UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                .setDisplayName(name)
+                .build();
+
+        user.updateProfile(profileUpdates)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "User profile updated.");
+                        }
+                    }
+                });
+    }
+
     private void displayToast(String message) {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-
     }
 
 

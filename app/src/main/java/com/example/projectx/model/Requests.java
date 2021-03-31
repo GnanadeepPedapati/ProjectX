@@ -16,6 +16,8 @@ public class Requests {
     String Request;
     String ImageUrl;
     String CreatedBy;
+    double latitute;
+    double longitude;
     private String CreatedAt;
     boolean tagsAssigned;
 

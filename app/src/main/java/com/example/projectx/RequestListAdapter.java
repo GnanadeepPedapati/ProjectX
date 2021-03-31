@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -68,7 +69,7 @@ public class RequestListAdapter extends BaseAdapter {
                 convertView.findViewById(R.id.request_text);
         TextView createDate = (TextView)
                 convertView.findViewById(R.id.request_create_time);
-        TextView responsesCount = (TextView)
+        Button responsesCount = (Button)
                 convertView.findViewById(R.id.responses_count);
         responsesCount.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -91,10 +92,14 @@ public class RequestListAdapter extends BaseAdapter {
             expandButton.setVisibility(View.VISIBLE);
             Glide.with(context)
                     .load(imageStorage)
+                    .fitCenter()
+                    .thumbnail(0.1f).circleCrop()
                     .into(imageView);
             Glide.with(context)
                     .clear(expandedImageView);
-        }
+        } else
+            Glide.with(context)
+                    .clear(imageView);
         expandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -115,18 +120,17 @@ public class RequestListAdapter extends BaseAdapter {
         responsesCount.setText(String.valueOf(requestListModel.getResponsesCount()) + " Responses");
         //sets the text for item name and item description from the current item object
         requestText.setText(requestListModel.getRequest());
-        if(requestListModel.getCreatedAt() != null && requestListModel.getCreatedAt() != "") {
+        if (requestListModel.getCreatedAt() != null && requestListModel.getCreatedAt() != "") {
             SimpleDateFormat sfd = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss a");
             Date date = sfd.parse(requestListModel.getCreatedAt());
             SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMdd");
-            if(sdf1.format(date).compareTo(sdf1.format(new Date())) >0){
+            if (sdf1.format(date).compareTo(sdf1.format(new Date())) > 0) {
                 sfd = new SimpleDateFormat("dd/MM/yyyy HH:mm a");
-            }
-            else{
+            } else {
                 sfd = new SimpleDateFormat("HH:mm a");
             }
 
-            String text =  sfd.format(date);
+            String text = sfd.format(date);
 //                String date = sfd.format(new Date(messageModel.getMessageTime()).getTime());
 //                dateTV.setText(text);
             createDate.setText(text);

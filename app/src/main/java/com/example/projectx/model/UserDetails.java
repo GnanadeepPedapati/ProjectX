@@ -13,5 +13,8 @@ public class UserDetails {
     private String uid;
     private String displayName;
     private String email;
+    private String phoneNumber;
+    private Boolean isBusiness;
+
 }
 

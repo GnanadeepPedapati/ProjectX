@@ -15,6 +15,7 @@ public class ResponseOverview {
     private String lastReceivedTime;
     private String lastMessage;
     private String otherUser;
+    private boolean hasReplied;
 
 
 }

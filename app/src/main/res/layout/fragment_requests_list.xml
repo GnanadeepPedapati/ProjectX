@@ -4,13 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/holo_blue_light"
+    android:background="@android:color/transparent"
     android:orientation="vertical"
     tools:context=".RequestsListFragment">
 
     <ListView
         android:id="@+id/request_list_item"
         android:layout_width="match_parent"
+        android:padding="5dp"
         android:layout_height="match_parent"></ListView>
 
 </LinearLayout>

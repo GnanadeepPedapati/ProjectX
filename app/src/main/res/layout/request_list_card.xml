@@ -13,7 +13,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         card_view:cardCornerRadius="8dp"
-        card_view:cardElevation="8dp">
+        android:layout_marginTop="5dp"
+        card_view:cardElevation="10dp">
 
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="match_parent"
@@ -36,17 +37,16 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="3"
-
-
-                    android:text="Sample reuestao sbe sent to user" />
+                    android:maxLines="1"
+                    android:text="Sample reuestao sbe sent to user"
+                    android:textSize="20dp"
+                    android:ems="3"
+                    android:textStyle="bold" />
 
                 <ImageView
                     android:id="@+id/bitmap_image"
-                    android:layout_width="match_parent"
-                    android:layout_weight="6"
-                    android:layout_height="wrap_content"
-                    android:maxHeight="50dp"
-                    android:minHeight="50dp"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
                     android:visibility="gone" />
 
 
@@ -55,15 +55,8 @@
             <ImageView
                 android:id="@+id/expanded_image_view"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-               />
+                android:layout_height="wrap_content" />
 
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginTop="1dp"
-                android:background="@android:color/darker_gray"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -73,25 +66,27 @@
                 android:orientation="horizontal">
 
 
-                <TextView
+                <Button
                     android:id="@+id/responses_count"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:padding="5dp"
-                    android:text="6 Responses" />
-
-                <TextView
-                    android:id="@+id/request_create_time"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:maxLines="1"
-                    android:text="10:00"
-                    android:textAlignment="textEnd"
-                    tools:ignore="RtlCompat" />
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:padding="1dp"
+                    android:shadowColor="@color/black"
+                    android:background="@color/teal_200"
+                    android:textColor="@color/black"
+                    android:text="view all 6 Responses" />
 
 
             </LinearLayout>
+
+            <TextView
+                android:id="@+id/request_create_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="3"
+                android:gravity="right"
+                android:text="28/11/2012"
+                android:textSize="10dp" />
 
 
         </LinearLayout>

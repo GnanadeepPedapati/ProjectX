@@ -11,7 +11,15 @@ public class UserDetailsUtil {
 
     public static String getUID() {
         FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+        if (currentUser == null)
+            return null;
         return currentUser.getUid();
+    }
+
+
+    public static FirebaseUser getUser() {
+        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+        return currentUser;
     }
 
     public static boolean isUserLoggedIn() {

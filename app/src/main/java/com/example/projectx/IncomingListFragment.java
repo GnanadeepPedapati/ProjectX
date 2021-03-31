@@ -33,6 +33,7 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -108,6 +109,7 @@ public class IncomingListFragment extends Fragment {
                 ResponseOverview responseOverview = responseOverviews.get(position);
                 Intent intent = new Intent(getContext(), ChatActivity.class);
                 intent.putExtra("otherUser", responseOverview.getOtherUser());
+                intent.putExtra("updateHasReplied", responseOverview.isHasReplied());
                 startActivity(intent);
             }
         });
@@ -136,6 +138,8 @@ public class IncomingListFragment extends Fragment {
                                     responseOverview.setEntityName(userRequest.getSender());
                                     responseOverview.setOtherUser(userRequest.getSender());
                                     responseOverviews.add(responseOverview);
+                                    if (userRequest.isHasReplied() == false)
+                                        responseOverview.setHasReplied(true);
                                     getDisplayName(responseOverview, userRequest.getSender());
                                     responseListAdapter.notifyDataSetChanged();
                                     String loggedInUser = UserDetailsUtil.getUID();
@@ -167,7 +171,16 @@ public class IncomingListFragment extends Fragment {
                                             MessageModel lastmessage = snapshot.getValue(MessageModel.class);
                                             if (Objects.nonNull(lastmessage)) {
                                                 responseOverview.setLastMessage(lastmessage.getMessage());
-                                                // responseOverview.setLastReceivedTime(lastmessage.getMessageTime().toDate().toString());
+                                                responseOverview.setLastReceivedTime(lastmessage.getMessageTime());
+                                                responseOverviews.sort(new Comparator<ResponseOverview>() {
+                                                    @Override
+                                                    public int compare(ResponseOverview o1, ResponseOverview o2) {
+                                                        if (o1.getLastReceivedTime() != null && o2.getLastReceivedTime() != null)
+                                                            return o1.getLastReceivedTime().compareTo(o2.getLastReceivedTime());
+                                                        else
+                                                            return 1;
+                                                    }
+                                                });
                                                 responseListAdapter.notifyDataSetChanged();
                                             }
                                         }
@@ -202,7 +215,11 @@ public class IncomingListFragment extends Fragment {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
                         UserDetails userDetails = document.toObject(UserDetails.class);
-                        responseOverview.setEntityName(userDetails.getDisplayName());
+                        if (userDetails.getIsBusiness() == null || userDetails.getIsBusiness() == Boolean.FALSE) {
+                            responseOverview.setEntityName(userDetails.getDisplayName());
+                        } else
+                            responseOverview.setEntityName((String) document.get("businessName"));
+
                         responseListAdapter.notifyDataSetChanged();
                         Log.d("Inert", "DocumentSnapshot data: " + document.getData());
                     } else {

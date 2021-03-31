@@ -90,9 +90,11 @@ public class RequestsListFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
 
         ListView requestListView = (ListView) getView().findViewById(R.id.request_list_item);
+        requests = new ArrayList<>();
         requestListAdapter = new RequestListAdapter(getActivity().getApplicationContext(), requests);
-        requestListView.setAdapter(requestListAdapter);
         getData(UserDetailsUtil.getUID());
+        requestListView.setAdapter(requestListAdapter);
+
         requestListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -117,6 +119,7 @@ public class RequestsListFragment extends Fragment {
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
                             Log.d("fires", "hello");
+
                             for (Requests request : task.getResult().toObjects(Requests.class)) {
 
                                 convertToRequestListModel(request);
@@ -131,7 +134,7 @@ public class RequestsListFragment extends Fragment {
                         RequestListModel requestListModel = new RequestListModel();
                         requestListModel.setRequestId(data.getRequestId());
                         requestListModel.setRequest(data.getRequest());
-                       // requestListModel.setCreatedAt(data.getCreatedAt());
+                        // requestListModel.setCreatedAt(data.getCreatedAt());
                         requestListModel.setImageUrl(data.getImageUrl());
 
                         getResponseCount(requestListModel);
@@ -167,4 +170,6 @@ public class RequestsListFragment extends Fragment {
                 });
 
     }
+
+
 }

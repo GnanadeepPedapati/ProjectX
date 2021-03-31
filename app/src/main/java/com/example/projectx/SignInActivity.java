@@ -1,8 +1,5 @@
 package com.example.projectx;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,7 +10,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.projectx.model.Requests;
+import androidx.annotation.NonNull;
+
 import com.example.projectx.model.UserDetails;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
@@ -25,6 +23,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
 
@@ -117,7 +116,10 @@ public class SignInActivity extends Activity implements View.OnClickListener {
         String uid = user.getUid();
 
 
-        UserDetails userDetails = new UserDetails(uid, displayName, email);
+        UserDetails userDetails = new UserDetails();
+        userDetails.setEmail(email);
+        userDetails.setUid(uid);
+        userDetails.setDisplayName(displayName);
         saveToFireStore(userDetails);
 
     }
@@ -180,10 +182,45 @@ public class SignInActivity extends Activity implements View.OnClickListener {
 
 
     private void postLogin() {
-        Intent i = new Intent(SignInActivity.this, HomeActivity.class);
-        startActivity(i);
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        DocumentReference docRef = db.collection("UserDetails").document(UserDetailsUtil.getUID());
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        UserDetails userDetails = document.toObject(UserDetails.class);
+                        Boolean isBusiness = userDetails.getIsBusiness();
+
+                        if (isBusiness == null) {
+                            goToBusinessActivity();
+                        } else {
+                            Intent i = new Intent(SignInActivity.this, HomeActivity.class);
+                            startActivity(i);
+                            finish();
+                        }
+                        Log.d(TAG, "DocumentSnapshot data: " + document.getData());
+                    } else {
+                        Log.d(TAG, "No such document");
+                    }
+                } else {
+                    Log.d(TAG, "get failed with ", task.getException());
+                }
+            }
+        });
+
+
+    }
+
+
+    private void goToBusinessActivity() {
+        Intent intent = new Intent(getApplicationContext(), BusinessActivity.class);
+        startActivity(intent);
         finish();
     }
+
 
     // [END auth_fui_result]
 }

@@ -4,6 +4,8 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
         android:allowBackup="true"
@@ -12,7 +14,31 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ProjectX">
-        <activity android:name=".BusinessActivity"></activity>
+
+<!--        <meta-data-->
+<!--            android:name="com.google.android.geo.API_KEY"-->
+<!--            android:value="${MAPS_API_KEY}" />-->
+<!--        <meta-data-->
+<!--            android:name="com.google.android.gms.version"-->
+<!--            android:value="@integer/google_play_services_version" />-->
+
+        <service
+            android:name=".NotificationService"
+            android:enabled="true"
+            android:exported="true" />
+
+        <receiver
+            android:name=".Restarter"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="restartservice" />
+            </intent-filter>
+        </receiver>
+
+        <activity android:name=".EditProfileActivity" />
+        <activity android:name=".ProfileViewActivity" />
+        <activity android:name=".BusinessActivity" />
         <activity android:name=".TagSelectionActivity" />
         <activity android:name=".PhotoViewActivity" />
         <activity android:name=".HomeActivity" />

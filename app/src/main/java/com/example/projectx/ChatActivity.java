@@ -16,8 +16,12 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.example.projectx.model.UserRequests;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.common.collect.ImmutableMap;
 import com.google.firebase.FirebaseError;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
@@ -26,14 +30,24 @@ import com.google.firebase.database.*;
 
 import com.example.projectx.model.MessageModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
 import com.google.type.DateTime;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import static android.content.ContentValues.TAG;
 
 public class ChatActivity extends AppCompatActivity {
 
@@ -46,7 +60,10 @@ public class ChatActivity extends AppCompatActivity {
     String loggedInUser;
     private String chatId;
     DatabaseReference mDatabase;
+    FirebaseFirestore firestoreDb = FirebaseFirestore.getInstance();
     FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+    String updateHasReplied;
+    String otherUser;
 
 
     @Override
@@ -54,6 +71,7 @@ public class ChatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         chatId = getIntent().getStringExtra("chatId");
+        updateHasReplied = getIntent().getStringExtra("updateHasReplied");
         setContentView(R.layout.activity_chat);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         progressBar = findViewById(R.id.progress_bar);
@@ -63,7 +81,7 @@ public class ChatActivity extends AppCompatActivity {
             return;
         }
         loggedInUser = currentUser.getUid();
-        final String otherUser = getIntent().getStringExtra("otherUser");
+        otherUser = getIntent().getStringExtra("otherUser");
         chatId = UserDetailsUtil.generateChatId(loggedInUser, otherUser);
 
         adapter = new ChatListAdapter(this, messagesList, loggedInUser);
@@ -84,9 +102,15 @@ public class ChatActivity extends AppCompatActivity {
                     SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss a");
                     String dateAndTime = formatter.format(date);
                     MessageModel messageModel = new MessageModel(edit.getText().toString().trim(), loggedInUser, false, dateAndTime);
+
+
                     mDatabase.child(ChatActivity.this.chatId).child("messages").push().setValue(messageModel);
                     mDatabase.child(ChatActivity.this.chatId).child("lastMessage").setValue(messageModel);
 
+                    insertNotificationRequest(otherUser);
+                    if (updateHasReplied.equals("true")) {
+                        updateUserRequestTable();
+                    }
                     mDatabase.child(ChatActivity.this.chatId).child("unseenCount" + otherUser).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<DataSnapshot> task) {
@@ -106,6 +130,29 @@ public class ChatActivity extends AppCompatActivity {
 //        displayMessages(mDatabase);
     }
 
+    private void updateUserRequestTable() {
+
+        // Get all user request table and update them
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        CollectionReference usrRef = db.collection("UserRequests");
+        Query query = usrRef.whereEqualTo("sender", otherUser).whereEqualTo("receiver", loggedInUser).whereEqualTo("hasReplied", false);
+
+        query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    List<DocumentSnapshot> documents = task.getResult().getDocuments();
+
+                    for (DocumentSnapshot documentSnapshot : documents) {
+                        String id = documentSnapshot.getId();
+                        usrRef.document(id).update(ImmutableMap.of("hasReplied", true));
+                    }
+                }
+            }
+        });
+
+
+    }
 
 //    public void displayMessages(DatabaseReference mDatabase){
 //
@@ -137,6 +184,32 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
+
+    private void insertNotificationRequest(String destinationUserId) {
+        Map<String, String> notificationMap = new HashMap<>();
+
+        notificationMap.put("messageNotification", "You have new messages");
+
+        firestoreDb.collection("Notifications")
+                .document(destinationUserId)
+                .set(notificationMap, SetOptions.merge())
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d("Insert", "DocumentSnapshot successfully written!");
+
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error writing document", e);
+                    }
+                });
+
+
+    }
+
     private void addPostEventListener(DatabaseReference mPostReference) {
 
         ChildEventListener childEventListener = new ChildEventListener() {
@@ -147,7 +220,7 @@ public class ChatActivity extends AppCompatActivity {
                 Log.d("firebase", "child child");
                 // A new comment has been added, add it to the displayed list
                 MessageModel msg = dataSnapshot.getValue(MessageModel.class);
-                        messagesList.add(msg);
+                messagesList.add(msg);
                 adapter.notifyDataSetChanged();
                 recyclerView.scrollToPosition(messagesList.size() - 1);
                 mPostReference.child(chatId).child("unseenCount" + loggedInUser).setValue(0);
