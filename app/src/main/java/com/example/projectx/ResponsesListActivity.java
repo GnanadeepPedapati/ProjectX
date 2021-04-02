@@ -78,7 +78,7 @@ public class ResponsesListActivity extends Activity {
                         if (task.isSuccessful()) {
                             for (UserRequests userRequest : task.getResult().toObjects(UserRequests.class)) {
                                 ResponseOverview responseOverview = new ResponseOverview();
-                                responseOverview.setEntityName(userRequest.getReceiver());
+                                responseOverview.setEntityName("");
                                 responseOverview.setOtherUser(userRequest.getReceiver());
                                 responseOverviews.add(responseOverview);
                                 responseListAdapter.notifyDataSetChanged();
@@ -147,7 +147,12 @@ public class ResponsesListActivity extends Activity {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
                         UserDetails userDetails = document.toObject(UserDetails.class);
-                        responseOverview.setEntityName(userDetails.getDisplayName());
+
+                        if (userDetails.getIsBusiness() == null || userDetails.getIsBusiness() == Boolean.FALSE) {
+                            responseOverview.setEntityName(userDetails.getDisplayName());
+                        } else
+                            responseOverview.setEntityName((String) document.get("businessName"));
+
                         responseListAdapter.notifyDataSetChanged();
                         Log.d("Inert", "DocumentSnapshot data: " + document.getData());
                     } else {
@@ -159,4 +164,6 @@ public class ResponsesListActivity extends Activity {
             }
         });
     }
+
+
 }

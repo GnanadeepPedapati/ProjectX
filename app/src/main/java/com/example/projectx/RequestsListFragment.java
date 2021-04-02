@@ -6,6 +6,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -44,6 +45,7 @@ public class RequestsListFragment extends Fragment {
 
     ArrayList<RequestListModel> requests = new ArrayList<>();
     RequestListAdapter requestListAdapter;
+    private SwipeRefreshLayout pullToRefresh;
 
 
     public RequestsListFragment() {
@@ -90,8 +92,21 @@ public class RequestsListFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
 
         ListView requestListView = (ListView) getView().findViewById(R.id.request_list_item);
-        requests = new ArrayList<>();
         requestListAdapter = new RequestListAdapter(getActivity().getApplicationContext(), requests);
+
+        pullToRefresh = getView().findViewById(R.id.pullToRefresh);
+        pullToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                getData(UserDetailsUtil.getUID()); // your code
+            }
+        });
+
+
+        pullToRefresh.setColorSchemeResources(android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light);
         getData(UserDetailsUtil.getUID());
         requestListView.setAdapter(requestListAdapter);
 
@@ -109,6 +124,8 @@ public class RequestsListFragment extends Fragment {
 
 
     public void getData(String userId) {
+        requests.clear();
+
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         CollectionReference usrRef = db.collection("Requests");
         Query query = usrRef.whereEqualTo("createdBy", userId);
@@ -124,6 +141,8 @@ public class RequestsListFragment extends Fragment {
 
                                 convertToRequestListModel(request);
                             }
+                            pullToRefresh.setRefreshing(false);
+
                         } else {
                             Log.d("fires", "Error getting documents: ", task.getException());
                         }

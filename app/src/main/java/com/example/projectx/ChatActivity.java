@@ -108,9 +108,12 @@ public class ChatActivity extends AppCompatActivity {
                     mDatabase.child(ChatActivity.this.chatId).child("lastMessage").setValue(messageModel);
 
                     insertNotificationRequest(otherUser);
-                    if (updateHasReplied.equals("true")) {
+                    if ("true".equals(updateHasReplied)) {
                         updateUserRequestTable();
+                        updateHasReplied= "false";
                     }
+
+
                     mDatabase.child(ChatActivity.this.chatId).child("unseenCount" + otherUser).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<DataSnapshot> task) {

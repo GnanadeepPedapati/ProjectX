@@ -6,6 +6,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -35,8 +36,10 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -50,6 +53,7 @@ public class IncomingListFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
     ResponseListAdapter responseListAdapter;
+    private SwipeRefreshLayout pullToRefresh;
 
     ArrayList<ResponseOverview> responseOverviews = new ArrayList<>();
 
@@ -100,6 +104,18 @@ public class IncomingListFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
 
         ListView responsesList = (ListView) getView().findViewById(R.id.incoming_list);
+         pullToRefresh = getView().findViewById(R.id.pullToRefresh);
+
+        pullToRefresh.setColorSchemeResources(android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light);
+        pullToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                getData(); // your code
+            }
+        });
         getData();
         responseListAdapter = new ResponseListAdapter(getActivity().getApplicationContext(), responseOverviews);
         responsesList.setAdapter(responseListAdapter);
@@ -109,7 +125,7 @@ public class IncomingListFragment extends Fragment {
                 ResponseOverview responseOverview = responseOverviews.get(position);
                 Intent intent = new Intent(getContext(), ChatActivity.class);
                 intent.putExtra("otherUser", responseOverview.getOtherUser());
-                intent.putExtra("updateHasReplied", responseOverview.isHasReplied());
+                intent.putExtra("updateHasReplied", String.valueOf(responseOverview.isHasReplied()));
                 startActivity(intent);
             }
         });
@@ -117,6 +133,7 @@ public class IncomingListFragment extends Fragment {
     }
 
     private void getData() {
+        responseOverviews.clear();
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         CollectionReference usrRef = db.collection("UserRequests");
         DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference().child("Chats");
@@ -135,11 +152,18 @@ public class IncomingListFragment extends Fragment {
                                 if (!senderSet.contains(userRequest.getSender())) {
                                     ResponseOverview responseOverview = new ResponseOverview();
                                     senderSet.add(userRequest.getSender());
-                                    responseOverview.setEntityName(userRequest.getSender());
+                                    responseOverview.setEntityName("");
                                     responseOverview.setOtherUser(userRequest.getSender());
                                     responseOverviews.add(responseOverview);
-                                    if (userRequest.isHasReplied() == false)
-                                        responseOverview.setHasReplied(true);
+
+                                    List<UserRequests> userRequests = task.getResult().toObjects(UserRequests.class);
+
+                                    List<UserRequests> filterSameSenderReq = filterSameSenders(userRequests, userRequest.getSender());
+                                    for (UserRequests usr : filterSameSenderReq) {
+                                        if (usr.isHasReplied() == false)
+                                            responseOverview.setHasReplied(true);
+                                    }
+
                                     getDisplayName(responseOverview, userRequest.getSender());
                                     responseListAdapter.notifyDataSetChanged();
                                     String loggedInUser = UserDetailsUtil.getUID();
@@ -194,6 +218,7 @@ public class IncomingListFragment extends Fragment {
 
                                 }
                             }
+                            pullToRefresh.setRefreshing(false);
 
 
                         } else {
@@ -201,6 +226,10 @@ public class IncomingListFragment extends Fragment {
                         }
                     }
                 });
+    }
+
+    private List<UserRequests> filterSameSenders(List<UserRequests> userRequests, String sender) {
+        return userRequests.stream().filter(userRequest -> userRequest.getSender().equals(sender)).collect(Collectors.toList());
     }
 
 

@@ -51,6 +51,25 @@
 
         </LinearLayout>
 
+        <SeekBar
+            android:id="@+id/seekBar1"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:max="100"
+            android:progress="20" />
+
+        <TextView
+            android:id="@+id/textview1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/seekBar1"
+            android:layout_below="@+id/seekBar1"
+            android:layout_marginTop="40dp"
+            android:layout_marginLeft="130dp"
+            android:textSize="20dp"
+            android:textStyle="bold"/>
+
         <Button
             android:id="@+id/submit_request"
             android:layout_marginTop="20dp"

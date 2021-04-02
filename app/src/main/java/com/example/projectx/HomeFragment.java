@@ -21,6 +21,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -61,6 +63,9 @@ public class HomeFragment extends Fragment {
     boolean imageUploadSuccess;
     int PERMISSION_ID = 44;
 
+    private SeekBar sBar;
+    private TextView tView;
+
     FusedLocationProviderClient mFusedLocationClient;
 
 
@@ -94,6 +99,28 @@ public class HomeFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         ImageButton attachButton = getView().findViewById(R.id.attachFile);
+
+        sBar = getView().findViewById(R.id.seekBar1);
+        tView = getView().findViewById(R.id.textview1);
+
+        tView.setText(sBar.getProgress() + "/" + sBar.getMax());
+
+        tView.setText(sBar.getProgress() + "/" + sBar.getMax());
+        sBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            int pval = 0;
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                pval = progress;
+            }
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                //write custom code to on start progress
+            }
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                tView.setText(pval + "/" + seekBar.getMax());
+            }
+        });
         attachButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
