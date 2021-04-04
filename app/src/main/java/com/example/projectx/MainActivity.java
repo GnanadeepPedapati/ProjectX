@@ -58,13 +58,20 @@ public class MainActivity extends Activity {
                 // This method will be executed once the timer is over
                 boolean userLoggedIn = UserDetailsUtil.isUserLoggedIn();
                 if (userLoggedIn) {
+                    boolean myServiceRunning = isMyServiceRunning(NotificationService.class);
+
+                    if (!myServiceRunning) {
+                        Intent intent = new Intent(MainActivity.this, LocationFetchService.class);
+                        startService(intent);
+                    }
                     postLogin();
 
                 } else {
 
                     Intent i = new Intent(MainActivity.this, SignInActivity.class);
                     startActivity(i);
-                    finish();                }
+                    finish();
+                }
 
 
             }

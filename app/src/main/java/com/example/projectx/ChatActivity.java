@@ -1,43 +1,41 @@
 package com.example.projectx;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
+import android.app.Activity;
 import android.os.Bundle;
-import android.os.Handler;
-import android.provider.ContactsContract;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.example.projectx.model.UserRequests;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.projectx.model.MessageModel;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.common.collect.ImmutableMap;
-import com.google.firebase.FirebaseError;
-import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.*;
-
-import com.example.projectx.model.MessageModel;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
-import com.google.type.DateTime;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -55,7 +53,6 @@ public class ChatActivity extends AppCompatActivity {
     ProgressBar progressBar;
     ArrayList<MessageModel> messagesList = new ArrayList<>();
     ChatListAdapter adapter;
-    //  String chatId = "YD8bboxlMFPUIB2wlCCeQv9F6Ui2_ZyO9cTzInrNrqFEM91AZsA2aU8O2";
     ChildEventListener childEventListener;
     String loggedInUser;
     private String chatId;
@@ -72,6 +69,9 @@ public class ChatActivity extends AppCompatActivity {
 
         chatId = getIntent().getStringExtra("chatId");
         updateHasReplied = getIntent().getStringExtra("updateHasReplied");
+        String chatHead = getIntent().getStringExtra("entityName");
+        ((AppCompatActivity)this).getSupportActionBar().setTitle(chatHead);
+
         setContentView(R.layout.activity_chat);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         progressBar = findViewById(R.id.progress_bar);
@@ -80,6 +80,7 @@ public class ChatActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "User not logged In", Toast.LENGTH_LONG).show();
             return;
         }
+
         loggedInUser = currentUser.getUid();
         otherUser = getIntent().getStringExtra("otherUser");
         chatId = UserDetailsUtil.generateChatId(loggedInUser, otherUser);
@@ -110,7 +111,7 @@ public class ChatActivity extends AppCompatActivity {
                     insertNotificationRequest(otherUser);
                     if ("true".equals(updateHasReplied)) {
                         updateUserRequestTable();
-                        updateHasReplied= "false";
+                        updateHasReplied = "false";
                     }
 
 
@@ -215,7 +216,7 @@ public class ChatActivity extends AppCompatActivity {
 
     private void addPostEventListener(DatabaseReference mPostReference) {
 
-        ChildEventListener childEventListener = new ChildEventListener() {
+        childEventListener = new ChildEventListener() {
 
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {

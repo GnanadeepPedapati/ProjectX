@@ -17,6 +17,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.example.projectx.model.Requests;
+import com.example.projectx.model.ResponseOverview;
 import com.example.projectx.model.businessmodels.RequestListModel;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -26,6 +27,7 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -153,9 +155,8 @@ public class RequestsListFragment extends Fragment {
                         RequestListModel requestListModel = new RequestListModel();
                         requestListModel.setRequestId(data.getRequestId());
                         requestListModel.setRequest(data.getRequest());
-                        // requestListModel.setCreatedAt(data.getCreatedAt());
+                        requestListModel.setCreatedAt(data.getCreatedAt());
                         requestListModel.setImageUrl(data.getImageUrl());
-
                         getResponseCount(requestListModel);
 
                         return;
@@ -175,6 +176,16 @@ public class RequestsListFragment extends Fragment {
                                             int size = task.getResult().getDocuments().size();
                                             requests.add(requestListModel);
                                             requestListModel.setResponsesCount(size);
+
+                                            requests.sort(new Comparator<RequestListModel>() {
+                                                @Override
+                                                public int compare(RequestListModel o1, RequestListModel o2) {
+                                                    if (o1.getCreatedAt() != null && o2.getCreatedAt() != null)
+                                                        return o2.getCreatedAt().compareTo(o1.getCreatedAt());
+                                                    else
+                                                        return -1;
+                                                }
+                                            });
                                             requestListAdapter.notifyDataSetChanged();
 
                                         } else {
