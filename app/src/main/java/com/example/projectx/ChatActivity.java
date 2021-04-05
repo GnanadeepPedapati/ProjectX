@@ -70,7 +70,8 @@ public class ChatActivity extends AppCompatActivity {
         chatId = getIntent().getStringExtra("chatId");
         updateHasReplied = getIntent().getStringExtra("updateHasReplied");
         String chatHead = getIntent().getStringExtra("entityName");
-        ((AppCompatActivity)this).getSupportActionBar().setTitle(chatHead);
+        ((AppCompatActivity) this).getSupportActionBar().setTitle(chatHead);
+
 
         setContentView(R.layout.activity_chat);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -269,7 +270,7 @@ public class ChatActivity extends AppCompatActivity {
 
         mPostReference.child(chatId).child("messages").addListenerForSingleValueEvent(new ValueEventListener() {
             public void onDataChange(DataSnapshot dataSnapshot) {
-                progressBar.setVisibility(View.INVISIBLE);
+                progressBar.setVisibility(View.GONE);
                 recyclerView.setVisibility(View.VISIBLE);
             }
 

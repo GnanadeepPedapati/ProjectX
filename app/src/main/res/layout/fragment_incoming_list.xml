@@ -17,7 +17,7 @@
     <ListView
         android:id="@+id/incoming_list"
         android:layout_width="match_parent"
-        android:divider="@color/fui_transparent"
+        android:divider="@color/quantum_black_divider"
         android:dividerHeight="1dp"
         android:layout_height="match_parent"></ListView>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

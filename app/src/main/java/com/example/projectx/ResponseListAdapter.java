@@ -1,11 +1,18 @@
 package com.example.projectx;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.TextView;
+
+import androidx.core.graphics.drawable.DrawableCompat;
 
 import com.example.projectx.model.ResponseOverview;
 
@@ -13,6 +20,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 public class ResponseListAdapter extends BaseAdapter {
 
@@ -62,6 +70,17 @@ public class ResponseListAdapter extends BaseAdapter {
                 convertView.findViewById(R.id.messagesCount);
         TextView lastReceivedTime = (TextView)
                 convertView.findViewById(R.id.lastReceivedTime);
+
+        Button icon = (Button) convertView.findViewById(R.id.round_icon);
+        Random rnd = new Random();
+        int color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
+        View iconContainer = convertView.findViewById(R.id.icon_container);
+        // iconContainer.setBackgroundColor(color);
+
+        Drawable background = icon.getBackground();
+        DrawableCompat.setTint(background, color);
+        if (responseOverview.getEntityName() != null && responseOverview.getEntityName().length() != 0)
+            icon.setText(responseOverview.getEntityName().substring(0, 1).toUpperCase());
 
         //sets the text for item name and item description from the current item object
         entityName.setText(responseOverview.getEntityName());
