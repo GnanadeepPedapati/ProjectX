@@ -216,7 +216,7 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 SimpleDateFormat sfd = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss a");
                 Date date = sfd.parse(messageModel.getMessageTime());
                 SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMdd");
-                if(sdf1.format(date).compareTo(sdf1.format(new Date())) >0){
+                if(sdf1.format(date).compareTo(sdf1.format(new Date())) <0){
                     sfd = new SimpleDateFormat("dd/MM/yyyy HH:mm a");
                 }
                 else{

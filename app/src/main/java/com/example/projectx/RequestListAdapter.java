@@ -124,7 +124,7 @@ public class RequestListAdapter extends BaseAdapter {
             SimpleDateFormat sfd = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss a");
             Date date = sfd.parse(requestListModel.getCreatedAt());
             SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMdd");
-            if (sdf1.format(date).compareTo(sdf1.format(new Date())) > 0) {
+            if (sdf1.format(date).compareTo(sdf1.format(new Date())) < 0) {
                 sfd = new SimpleDateFormat("dd/MM/yyyy HH:mm a");
             } else {
                 sfd = new SimpleDateFormat("HH:mm a");
@@ -135,6 +135,8 @@ public class RequestListAdapter extends BaseAdapter {
 //                dateTV.setText(text);
             createDate.setText(text);
         }
+        else
+            createDate.setText("");
 
 //        createDate.setText(requestListModel.getCreatedAt().toDate().toString());
 

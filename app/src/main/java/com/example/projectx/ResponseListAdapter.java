@@ -78,20 +78,24 @@ public class ResponseListAdapter extends BaseAdapter {
             }
             SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMdd");
             if (sdf1.format(date).compareTo(sdf1.format(new Date())) < 0) {
-                sfd = new SimpleDateFormat("dd/MM HH:mm a");
+                sfd = new SimpleDateFormat("dd/MM/yy");
             } else {
                 sfd = new SimpleDateFormat("HH:mm a");
             }
 
             String text = sfd.format(date);
-//                String date = sfd.format(new Date(messageModel.getMessageTime()).getTime());
-//                dateTV.setText(text);
 
             lastReceivedTime.setText(text);
 
+        } else {
+
+            lastReceivedTime.setText("");
         }
-        //lastReceivedTime.setText(responseOverview.getLastReceivedTime());
-        messagesCount.setText(responseOverview.getNewMessageCount());
+        if (responseOverview.getNewMessageCount() != null && !"0".equals(responseOverview.getNewMessageCount())) {
+            messagesCount.setVisibility(View.VISIBLE);
+            messagesCount.setText(responseOverview.getNewMessageCount());
+        } else
+            messagesCount.setVisibility(View.INVISIBLE);
 
         // returns the view for the current row
         return convertView;

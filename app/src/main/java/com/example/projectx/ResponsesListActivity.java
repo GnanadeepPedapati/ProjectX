@@ -1,6 +1,7 @@
 package com.example.projectx;
 
 import androidx.annotation.NonNull;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -30,26 +31,45 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Objects;
 
 public class ResponsesListActivity extends Activity {
 
     ArrayList<ResponseOverview> responseOverviews = new ArrayList<>();
     ResponseListAdapter responseListAdapter;
+    DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference().child("Chats");
+    int callsInitiated = 0;
+    private SwipeRefreshLayout pullToRefresh;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_responses_list);
 
+        pullToRefresh = findViewById(R.id.pullToRefresh);
 
+
+        pullToRefresh.setColorSchemeResources(android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light);
         String requestId = getIntent().getStringExtra("requestId");
         String requestText = getIntent().getStringExtra("requestText");
 
         TextView requestHeading = findViewById(R.id.request_text_heading);
         requestHeading.setText(requestText);
         ListView responsesList = (ListView) findViewById(R.id.incoming_list);
-        getData(requestId);
+        getData(requestId); // your code
+
+        pullToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                getData(requestId); // your code
+            }
+        });
+
 
         responseListAdapter = new ResponseListAdapter(getApplicationContext(), responseOverviews);
         responsesList.setAdapter(responseListAdapter);
@@ -59,6 +79,7 @@ public class ResponsesListActivity extends Activity {
                 ResponseOverview responseOverview = responseOverviews.get(position);
                 Intent intent = new Intent(ResponsesListActivity.this, ChatActivity.class);
                 intent.putExtra("otherUser", responseOverview.getOtherUser());
+                intent.putExtra("entityName", responseOverview.getEntityName());
                 startActivity(intent);
             }
         });
@@ -66,9 +87,9 @@ public class ResponsesListActivity extends Activity {
 
 
     public void getData(String requestId) {
+        responseOverviews.clear();
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         CollectionReference usrRef = db.collection("UserRequests");
-        DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference().child("Chats");
 
         Query query = usrRef.whereEqualTo("requestId", requestId).whereEqualTo("hasReplied", true);
         query.get()
@@ -82,47 +103,10 @@ public class ResponsesListActivity extends Activity {
                                 responseOverview.setOtherUser(userRequest.getReceiver());
                                 responseOverviews.add(responseOverview);
                                 responseListAdapter.notifyDataSetChanged();
-                                String loggedInUser = UserDetailsUtil.getUID();
-                                String chatId = UserDetailsUtil.generateChatId(loggedInUser, userRequest.getReceiver());
 
                                 getDisplayName(responseOverview, userRequest.getReceiver());
 
-                                mDatabase.child(chatId).child("unseenCount" + loggedInUser).addValueEventListener(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                        Integer lastUnseenCount = snapshot.getValue(Integer.class);
 
-                                        if (Objects.nonNull(lastUnseenCount)) {
-                                            responseOverview.setNewMessageCount(lastUnseenCount.toString());
-                                            responseListAdapter.notifyDataSetChanged();
-                                        }
-
-                                    }
-
-                                    @Override
-                                    public void onCancelled(@NonNull DatabaseError error) {
-
-                                    }
-                                });
-
-
-                                mDatabase.child(chatId).child("lastMessage").addValueEventListener(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-
-                                        MessageModel lastmessage = snapshot.getValue(MessageModel.class);
-                                        if (Objects.nonNull(lastmessage)) {
-                                            responseOverview.setLastMessage(lastmessage.getMessage());
-                                            // responseOverview.setLastReceivedTime(lastmessage.getMessageTime().toDate().toString());
-                                            responseListAdapter.notifyDataSetChanged();
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onCancelled(@NonNull DatabaseError error) {
-
-                                    }
-                                });
 
 
                             }
@@ -136,24 +120,94 @@ public class ResponsesListActivity extends Activity {
     }
 
 
+    private void addLastMessage(ResponseOverview responseOverview, String chatId) {
+
+        mDatabase.child(chatId).child("unseenCount" + UserDetailsUtil.getUID()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                Integer lastUnseenCount = snapshot.getValue(Integer.class);
+
+                if (Objects.nonNull(lastUnseenCount)) {
+                    responseOverview.setNewMessageCount(lastUnseenCount.toString());
+                    responseListAdapter.notifyDataSetChanged();
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+        responseListAdapter.notifyDataSetChanged();
+
+        mDatabase.child(chatId).child("lastMessage").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                MessageModel lastmessage = snapshot.getValue(MessageModel.class);
+                if (Objects.nonNull(lastmessage)) {
+                    responseOverview.setLastMessage(lastmessage.getMessage());
+                    responseOverview.setLastReceivedTime(lastmessage.getMessageTime());
+                    responseOverviews.sort(new Comparator<ResponseOverview>() {
+                        @Override
+                        public int compare(ResponseOverview o1, ResponseOverview o2) {
+                            if (o1.getLastReceivedTime() != null && o2.getLastReceivedTime() != null)
+                                return o2.getLastReceivedTime().compareTo(o1.getLastReceivedTime());
+                            else
+                                return -1;
+                        }
+                    });
+                    responseListAdapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+        responseListAdapter.notifyDataSetChanged();
+    }
+
+
+    private void incrementCall() {
+        callsInitiated++;
+        pullToRefresh.setRefreshing(true);
+    }
+
+
+    private void decrementCall() {
+        callsInitiated--;
+        if (callsInitiated == 0)
+            pullToRefresh.setRefreshing(false);
+    }
+
+
     private void getDisplayName(ResponseOverview responseOverview, String uid) {
+
+        incrementCall();
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         DocumentReference docRef = db.collection("UserDetails").document(uid);
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                decrementCall();
                 if (task.isSuccessful()) {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
                         UserDetails userDetails = document.toObject(UserDetails.class);
-
                         if (userDetails.getIsBusiness() == null || userDetails.getIsBusiness() == Boolean.FALSE) {
                             responseOverview.setEntityName(userDetails.getDisplayName());
                         } else
                             responseOverview.setEntityName((String) document.get("businessName"));
-
+                        String loggedInUser = UserDetailsUtil.getUID();
+                        String chatId = UserDetailsUtil.generateChatId(loggedInUser, uid);
                         responseListAdapter.notifyDataSetChanged();
+                        addLastMessage(responseOverview, chatId);
+                        responseListAdapter.notifyDataSetChanged();
+
                         Log.d("Inert", "DocumentSnapshot data: " + document.getData());
                     } else {
                         Log.d("Inert", "No such document");
@@ -164,6 +218,5 @@ public class ResponsesListActivity extends Activity {
             }
         });
     }
-
 
 }

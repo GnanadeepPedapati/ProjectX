@@ -65,7 +65,7 @@
             android:layout_height="wrap_content"
             android:textSize="11sp"
             android:textColor="@android:color/white"
-            android:text="Hi" />
+          />
 
     </RelativeLayout>
 </LinearLayout>

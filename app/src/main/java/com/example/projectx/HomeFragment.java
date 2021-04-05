@@ -105,17 +105,19 @@ public class HomeFragment extends Fragment {
 
         tView.setText(sBar.getProgress() + "/" + sBar.getMax());
 
-        tView.setText(sBar.getProgress() + "/" + sBar.getMax());
         sBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             int pval = 0;
+
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 pval = progress;
             }
+
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
                 //write custom code to on start progress
             }
+
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 tView.setText(pval + "/" + seekBar.getMax());
@@ -200,6 +202,7 @@ public class HomeFragment extends Fragment {
         request.setCreatedAt(dateAndTime);
         request.setLatitute(location.getLatitude());
         request.setLongitude(location.getLongitude());
+        request.setDistance(sBar.getProgress());
         saveToFireStore(request);
 
     }
@@ -426,6 +429,5 @@ public class HomeFragment extends Fragment {
         LocationManager locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
     }
-
 
 }

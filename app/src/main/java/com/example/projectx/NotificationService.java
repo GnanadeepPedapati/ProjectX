@@ -94,6 +94,9 @@ public class NotificationService extends Service {
         this.sendBroadcast(broadcastIntent);
     }
 
+
+
+
     private void createAndNotify() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
