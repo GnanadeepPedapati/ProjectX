@@ -13,14 +13,24 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         card_view:cardCornerRadius="8dp"
-        android:layout_marginTop="5dp"
+        android:layout_marginBottom="15dp"
         card_view:cardElevation="10dp">
 
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_margin="4dp"
+            android:background="#585D6D"
             android:orientation="vertical">
+            <TextView
+                android:id="@+id/request_create_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                android:textColor="@color/white"
+                android:layout_weight="3"
+                android:gravity="left"
+                android:text="28/11/2012"
+                android:textSize="10dp" />
 
 
             <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -32,14 +42,18 @@
                 android:focusableInTouchMode="false"
                 android:orientation="horizontal">
 
+
                 <TextView
                     android:id="@+id/request_text"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="3"
+                    android:textColor="@color/white"
                     android:maxLines="1"
-                    android:text="Sample reuestao sbe sent to user"
-                    android:textSize="20dp"
+                    android:layout_marginLeft="3dp"
+                    android:text="Sample request sent to user"
+                    android:padding="10dp"
+                    android:textSize="15dp"
                     android:ems="3"
                     android:textStyle="bold" />
 
@@ -59,34 +73,31 @@
 
 
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="200dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="3dp"
                 android:elevation="10dp"
+                android:padding="10dp"
+                android:layout_gravity="center"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
                 android:orientation="horizontal">
 
 
                 <Button
                     android:id="@+id/responses_count"
                     android:layout_width="match_parent"
-                    android:layout_height="40dp"
+                    android:layout_height="30dp"
                     android:padding="1dp"
+                    android:textSize="10dp"
                     android:shadowColor="@color/black"
-                    android:background="@color/teal_200"
+                    android:background="@drawable/rectangle"
                     android:textColor="@color/black"
                     android:text="view all 6 Responses" />
 
 
             </LinearLayout>
 
-            <TextView
-                android:id="@+id/request_create_time"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="3"
-                android:gravity="right"
-                android:text="28/11/2012"
-                android:textSize="10dp" />
 
 
         </LinearLayout>

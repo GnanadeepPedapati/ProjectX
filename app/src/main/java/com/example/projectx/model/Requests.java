@@ -19,6 +19,7 @@ public class Requests {
     double latitute;
     double longitude;
     private String CreatedAt;
+    int distance;
     boolean tagsAssigned;
 
 }

@@ -193,7 +193,6 @@ public class HomeFragment extends Fragment {
         Date date = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss a");
         String dateAndTime = formatter.format(date);
-
         request.setRequest(text);
         request.setImageUrl(imageUrl);
         request.setCreatedBy(UserDetailsUtil.getUID());
