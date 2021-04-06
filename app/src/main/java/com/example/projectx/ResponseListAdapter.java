@@ -74,13 +74,16 @@ public class ResponseListAdapter extends BaseAdapter {
         Button icon = (Button) convertView.findViewById(R.id.round_icon);
         Random rnd = new Random();
         int color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
-        View iconContainer = convertView.findViewById(R.id.icon_container);
-        // iconContainer.setBackgroundColor(color);
+
 
         Drawable background = icon.getBackground();
         DrawableCompat.setTint(background, color);
-        if (responseOverview.getEntityName() != null && responseOverview.getEntityName().length() != 0)
+        if (responseOverview.getEntityName() != null && responseOverview.getEntityName().length() != 0) {
+            icon.setVisibility(View.VISIBLE);
             icon.setText(responseOverview.getEntityName().substring(0, 1).toUpperCase());
+        } else
+            icon.setVisibility(View.INVISIBLE);
+
 
         //sets the text for item name and item description from the current item object
         entityName.setText(responseOverview.getEntityName());
