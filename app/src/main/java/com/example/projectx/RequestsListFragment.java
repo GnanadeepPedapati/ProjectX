@@ -94,6 +94,12 @@ public class RequestsListFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
 
         ListView requestListView = (ListView) getView().findViewById(R.id.request_list_item);
+
+
+        requestListView.setSelector(R.color.transparent);
+        requestListView.setDivider(null);
+
+
         requestListAdapter = new RequestListAdapter(getActivity().getApplicationContext(), requests);
 
         pullToRefresh = getView().findViewById(R.id.pullToRefresh);

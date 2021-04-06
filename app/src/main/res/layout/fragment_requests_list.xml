@@ -16,6 +16,7 @@
         <ListView
             android:id="@+id/request_list_item"
             android:layout_width="match_parent"
+            android:dividerHeight="0dp"
             android:layout_height="match_parent"
             android:padding="5dp"></ListView>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
