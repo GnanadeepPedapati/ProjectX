@@ -3,7 +3,7 @@
     android:insetRight="10dp" >
 
     <shape android:shape="rectangle" >
-        <solid android:color="@color/quantum_black_divider" />
+        <solid android:color="#464A50" />
     </shape>
 
 </inset>

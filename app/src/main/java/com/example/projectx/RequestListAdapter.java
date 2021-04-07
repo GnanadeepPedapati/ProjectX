@@ -117,7 +117,11 @@ public class RequestListAdapter extends BaseAdapter {
         });
 
 
-        responsesCount.setText(String.valueOf(requestListModel.getResponsesCount()) + " Responses");
+        responsesCount.setText("View all " +String.valueOf(requestListModel.getResponsesCount()) + " Responses");
+        if(requestListModel.getResponsesCount() == 0){
+            responsesCount.setText("No Responses Yet");
+            responsesCount.setEnabled(true);
+        }
         //sets the text for item name and item description from the current item object
         requestText.setText(requestListModel.getRequest());
         if (requestListModel.getCreatedAt() != null && requestListModel.getCreatedAt() != "") {
