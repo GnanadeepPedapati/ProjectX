@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -48,7 +49,7 @@ public class SignInActivity extends Activity implements View.OnClickListener {
 
         emailInput = findViewById(R.id.email);
         passwordInput = findViewById(R.id.password);
-        Button googleSignIn = findViewById(R.id.googleSignIn);
+        ImageButton googleSignIn = findViewById(R.id.googleSignIn);
         Button emailSignIn = findViewById(R.id.emailSignIn);
         googleSignIn.setOnClickListener(this);
         emailSignIn.setOnClickListener(this);

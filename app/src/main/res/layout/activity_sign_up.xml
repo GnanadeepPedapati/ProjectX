@@ -10,6 +10,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="#36393f"
         android:orientation="vertical">
 
         <LinearLayout
@@ -24,6 +25,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="50dp"
+                android:layout_marginTop="10dp"
                 android:layout_marginRight="50dp"
                 android:hint="Name"
                 android:inputType="textEmailAddress" />
@@ -32,6 +34,7 @@
                 android:id="@+id/signUpEmail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
                 android:layout_marginLeft="50dp"
                 android:layout_marginRight="50dp"
                 android:hint="Email"
@@ -42,6 +45,7 @@
                 android:id="@+id/signUpPassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
                 android:layout_marginLeft="50dp"
                 android:layout_marginRight="50dp"
                 android:hint="Password"
@@ -51,6 +55,7 @@
                 android:id="@+id/confirmPassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
                 android:layout_marginLeft="50dp"
                 android:layout_marginRight="50dp"
                 android:hint="Confirm Password"
@@ -59,8 +64,9 @@
             <Button
                 android:id="@+id/createAccount"
                 android:layout_width="wrap_content"
+                android:layout_marginTop="20dp"
                 android:layout_height="wrap_content"
-                android:backgroundTint="@android:color/holo_orange_light"
+                android:backgroundTint="@color/teal_200"
                 android:text="Create Account"
 
                 />

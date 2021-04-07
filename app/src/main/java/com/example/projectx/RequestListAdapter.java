@@ -120,7 +120,7 @@ public class RequestListAdapter extends BaseAdapter {
         responsesCount.setText("View all " +String.valueOf(requestListModel.getResponsesCount()) + " Responses");
         if(requestListModel.getResponsesCount() == 0){
             responsesCount.setText("No Responses Yet");
-            responsesCount.setEnabled(true);
+            responsesCount.setEnabled(false);
         }
         //sets the text for item name and item description from the current item object
         requestText.setText(requestListModel.getRequest());
