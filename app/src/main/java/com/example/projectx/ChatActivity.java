@@ -1,10 +1,20 @@
 package com.example.projectx;
 
+import android.Manifest;
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.OpenableColumns;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -12,6 +22,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -36,6 +49,10 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -44,6 +61,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 import static android.content.ContentValues.TAG;
 
@@ -61,11 +79,21 @@ public class ChatActivity extends AppCompatActivity {
     FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
     String updateHasReplied;
     String otherUser;
+    StorageReference storageReference;
+    private Uri filePath;
+
+    private static final int STORAGE_PERMISSION_CODE = 123;
+
+
+    private int PICK_IMAGE_REQUEST = 1;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        storageReference = storage.getReference();
 
         chatId = getIntent().getStringExtra("chatId");
         updateHasReplied = getIntent().getStringExtra("updateHasReplied");
@@ -92,6 +120,11 @@ public class ChatActivity extends AppCompatActivity {
         mDatabase = FirebaseDatabase.getInstance().getReference().child("Chats");
 
         addPostEventListener(mDatabase);
+
+
+
+
+
 //        FirebaseAuth.getInstance()
 //                .getCurrentUser()
 //                .getDisplayName()
@@ -100,38 +133,24 @@ public class ChatActivity extends AppCompatActivity {
             public void onClick(View view) {
                 EditText edit = (EditText) findViewById(R.id.input);
                 if (!edit.getText().toString().trim().equals("")) {
-                    Date date = new Date();
-                    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss a");
-                    String dateAndTime = formatter.format(date);
-                    MessageModel messageModel = new MessageModel(edit.getText().toString().trim(), loggedInUser, false, dateAndTime);
-
-
-                    mDatabase.child(ChatActivity.this.chatId).child("messages").push().setValue(messageModel);
-                    mDatabase.child(ChatActivity.this.chatId).child("lastMessage").setValue(messageModel);
-
-                    insertNotificationRequest(otherUser);
-                    if ("true".equals(updateHasReplied)) {
-                        updateUserRequestTable();
-                        updateHasReplied = "false";
-                    }
-
-
-                    mDatabase.child(ChatActivity.this.chatId).child("unseenCount" + otherUser).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<DataSnapshot> task) {
-                            if (task.isSuccessful()) {
-                                Integer lastUnseenCount = task.getResult().getValue(Integer.class);
-                                if (Objects.isNull(lastUnseenCount))
-                                    lastUnseenCount = 0;
-                                mDatabase.child(ChatActivity.this.chatId).child("unseenCount" + otherUser).setValue(lastUnseenCount + 1);
-
-                            }
-                        }
-                    });
+                    sendMessage(edit.getText().toString().trim());
                 }
                 edit.setText("");
             }
         });
+
+        ImageButton attachButton = findViewById(R.id.attachFile);
+        attachButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                requestStoragePermission();
+                if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
+                    attachFile();
+            }
+
+        });
+
+
 //        displayMessages(mDatabase);
     }
 
@@ -288,6 +307,184 @@ public class ChatActivity extends AppCompatActivity {
         if (Objects.nonNull(childEventListener))
             mDatabase.child(chatId).child("messages").removeEventListener(childEventListener);
         super.onPause();
+    }
+
+
+    @Override
+    protected void onResume() {
+        if (Objects.nonNull(childEventListener))
+            mDatabase.child(chatId).child("messages").addChildEventListener(childEventListener);
+        super.onResume();
+    }
+
+    private void attachFile() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
+
+    }
+
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            filePath = data.getData();
+
+            Cursor returnCursor =
+                    getContentResolver().query(filePath, null, null, null, null);
+            int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+            returnCursor.moveToFirst();
+
+            Toast.makeText(getApplicationContext(), "Selected" + returnCursor.getString(nameIndex), Toast.LENGTH_LONG).show();
+            uploadImage();
+        }
+    }
+
+    private void uploadImage() {
+        if (filePath != null) {
+
+            // Code for showing progressDialog while uploading
+            ProgressDialog progressDialog
+                    = new ProgressDialog(this);
+
+
+            progressDialog.setTitle("Uploading...");
+            progressDialog.show();
+
+            // Defining the child of storageReference
+            StorageReference ref
+                    = storageReference
+                    .child(
+                            "images/"
+                                    + UUID.randomUUID().toString());
+            String path = ref.getPath();
+
+
+            // adding listeners on upload
+            // or failure of image
+            ref.putFile(filePath)
+                    .addOnSuccessListener(
+                            new OnSuccessListener<UploadTask.TaskSnapshot>() {
+
+                                @Override
+                                public void onSuccess(
+                                        UploadTask.TaskSnapshot taskSnapshot) {
+
+                                    // Image uploaded successfully
+                                    // Dismiss dialog
+                                    progressDialog.dismiss();
+                                    Toast
+                                            .makeText(getApplicationContext(),
+                                                    "Image Uploaded!!",
+                                                    Toast.LENGTH_SHORT)
+                                            .show();
+
+                                    sendMessage(path);
+
+                                }
+                            })
+
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+
+                            // Error, Image not uploaded
+                            progressDialog.dismiss();
+                            Toast
+                                    .makeText(getApplicationContext(),
+                                            "Failed " + e.getMessage(),
+                                            Toast.LENGTH_SHORT)
+                                    .show();
+                        }
+                    })
+                    .addOnProgressListener(
+                            new OnProgressListener<UploadTask.TaskSnapshot>() {
+
+                                // Progress Listener for loading
+                                // percentage on the dialog box
+                                @Override
+                                public void onProgress(
+                                        UploadTask.TaskSnapshot taskSnapshot) {
+                                    double progress
+                                            = (100.0
+                                            * taskSnapshot.getBytesTransferred()
+                                            / taskSnapshot.getTotalByteCount());
+                                    progressDialog.setMessage(
+                                            "Uploaded "
+                                                    + (int) progress + "%");
+                                }
+                            });
+        }
+    }
+
+
+    private void sendMessage(String message) {
+
+        Date date = new Date();
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss a");
+        String dateAndTime = formatter.format(date);
+        MessageModel messageModel = new MessageModel(message, loggedInUser, false, dateAndTime);
+
+
+        mDatabase.child(ChatActivity.this.chatId).child("messages").push().setValue(messageModel);
+        mDatabase.child(ChatActivity.this.chatId).child("lastMessage").setValue(messageModel);
+
+        insertNotificationRequest(otherUser);
+        if ("true".equals(updateHasReplied)) {
+            updateUserRequestTable();
+            updateHasReplied = "false";
+        }
+
+
+        mDatabase.child(ChatActivity.this.chatId).child("unseenCount" + otherUser).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DataSnapshot> task) {
+                if (task.isSuccessful()) {
+                    Integer lastUnseenCount = task.getResult().getValue(Integer.class);
+                    if (Objects.isNull(lastUnseenCount))
+                        lastUnseenCount = 0;
+                    mDatabase.child(ChatActivity.this.chatId).child("unseenCount" + otherUser).setValue(lastUnseenCount + 1);
+
+                }
+            }
+        });
+    }
+
+
+    //Requesting permission
+    private void requestStoragePermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
+            return;
+
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            //If the user has denied the permission previously your code will come to this block
+            //Here you can explain why you need this permission
+            //Explain here why you need this permission
+        }
+        //And finally ask for the permission
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, STORAGE_PERMISSION_CODE);
+    }
+
+
+    //This method will be called when the user will tap on allow or deny
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @lombok.NonNull String[] permissions, @lombok.NonNull int[] grantResults) {
+
+        //Checking the request code of our request
+        if (requestCode == STORAGE_PERMISSION_CODE) {
+
+            //If permission is granted
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                //Displaying a toast
+                Toast.makeText(this, "Permission granted now you can read the storage", Toast.LENGTH_LONG).show();
+            } else {
+                //Displaying another toast if permission is not granted
+                Toast.makeText(this, "Oops you just denied the permission. ", Toast.LENGTH_LONG).show();
+                requestStoragePermission();
+            }
+        }
     }
 
 }

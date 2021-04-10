@@ -24,12 +24,30 @@
             android:layout_marginTop="20dp"
             android:src="@drawable/pencil" />
 
-        <ImageView
-            android:id="@+id/profileImageView"
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/icon_container"
             android:layout_width="200dp"
             android:layout_height="200dp"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:background="@drawable/round_button"
+            android:orientation="vertical">
 
-            android:background="@drawable/image_view_circle" />
+            <TextView
+                android:id="@+id/profileTitleLetter"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="5dp"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:text="S"
+                android:gravity="center"
+                android:textColor="@color/white"
+                android:textSize="70dp"
+                android:visibility="visible" />
+
+        </LinearLayout>
 
         <TextView
             android:id="@+id/profileName"
@@ -49,7 +67,8 @@
             android:textColor="@color/white"
             android:gravity="center"
             android:padding="5dp"
-            android:text="gnana.deeprk19961128@gmail.com" />
+            android:text="gnana.deeprk19961128@gmail.com"
+         />
 
 
         <TextView
@@ -60,6 +79,8 @@
             android:paddingTop="5dp"
             android:textColor="@color/white"
             android:text="9910599298" />
+            android:text="9910599298"
+            android:textColor="@color/black" />
 
 
     </LinearLayout>

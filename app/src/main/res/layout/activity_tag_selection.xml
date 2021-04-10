@@ -64,6 +64,15 @@
         </LinearLayout>
 
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/skip_now"
+            android:textColor="@color/white"
+            android:gravity="end"
+            android:textStyle="italic"
+            android:layout_marginRight="30dp"
+            android:text="Skip now" />
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

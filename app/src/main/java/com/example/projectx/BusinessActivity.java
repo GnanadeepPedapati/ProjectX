@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.projectx.model.UserDetails;
@@ -31,6 +32,7 @@ public class BusinessActivity extends AppCompatActivity {
     boolean isBusiness;
     CardView businessCard;
     Button continueBtn;
+    TextView skipNow;
     EditText businessName, businessAddress, businessPinCode, businessPhoneNo, businessCity;
 
     @Override
@@ -48,6 +50,7 @@ public class BusinessActivity extends AppCompatActivity {
         businessPhoneNo = findViewById(R.id.businessPhone);
         businessCity = findViewById(R.id.businessCity);
 
+        skipNow = findViewById(R.id.skip_now);
 
         continueBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -59,6 +62,15 @@ public class BusinessActivity extends AppCompatActivity {
 
             }
         });
+
+
+        skipNow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                updateUserAsNonBusiness();
+            }
+        });
+
 
     }
 
@@ -106,7 +118,6 @@ public class BusinessActivity extends AppCompatActivity {
         hashMap.put("isBusiness", false);
 
         saveToFireStore(hashMap);
-
 
     }
 

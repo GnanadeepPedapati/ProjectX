@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:id="@+id/main_page_layout"
     android:background="@color/black"
     tools:context=".ChatActivity">
 
@@ -40,16 +41,44 @@
         android:gravity="bottom"
         android:orientation="horizontal">
 
-        <EditText
+
+
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="5"
-            android:id="@+id/input"
+            android:layout_height="wrap_content"
             android:background="@drawable/rounded_rectangle_white"
-            android:hint="Write a message"
-            android:textColor="@android:color/black"
-            android:paddingLeft="5dp"
-            android:textColorHint="#CFD8DC" />
+            android:gravity="center"
+            android:layout_weight="5"
+
+            android:minHeight="80dp"
+            android:orientation="horizontal">
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/input"
+                android:layout_weight="10"
+                android:background="@drawable/rounded_rectangle_white"
+                android:hint="Write a message"
+                android:textColor="@android:color/black"
+                android:paddingLeft="5dp"
+                android:textColorHint="#CFD8DC" />
+
+            <ImageButton
+                android:id="@+id/attachFile"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:padding="10dp"
+                android:layout_weight="10"
+                android:background="@color/fui_transparent"
+                android:src="@drawable/ic_launcher" />
+
+        </LinearLayout>
+
+
+
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:layout_width="match_parent"
