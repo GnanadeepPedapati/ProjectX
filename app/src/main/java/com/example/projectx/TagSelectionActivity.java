@@ -53,9 +53,7 @@ public class TagSelectionActivity extends AppCompatActivity {
     FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     private List<String> selectedTags = new ArrayList<>();
-    private List<String> sourceTags = new ArrayList<>(
-            Arrays.asList("Apple", "Orange", "Bat", "Buffalo", "Pig", "Peacock", "Pigeon", "Parrot", "Ox", "Owl", "Tiger", "Lion", "Frog"));
-
+    private List<String> sourceTags = new ArrayList<>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -232,7 +230,7 @@ public class TagSelectionActivity extends AppCompatActivity {
 
         for (int index = 0; index < tagList.size(); index++) {
             final String tagName = tagList.get(index);
-            //addTagToSourceGroup(tagName);
+            addTagToSourceGroup(tagName);
         }
     }
 

@@ -7,6 +7,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -26,7 +27,7 @@ import com.google.firebase.auth.FirebaseUser;
 public class ProfileViewActivity extends AppCompatActivity {
 
 
-    Button changePassword, myTags, signOut;
+    Button changePassword, myTags, signOut,helpCenter;
 
     TextView profileName, textEmail, textPhone;
     FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
@@ -46,6 +47,7 @@ public class ProfileViewActivity extends AppCompatActivity {
 
         changePassword = findViewById(R.id.changePassword);
         myTags = findViewById(R.id.profileTagsButton);
+        helpCenter = findViewById(R.id.profileHelp);
         signOut = findViewById(R.id.signOut);
         signOut.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -60,6 +62,14 @@ public class ProfileViewActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(ProfileViewActivity.this, EditProfileActivity.class);
                 startActivity(intent);
+            }
+        });
+        helpCenter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts(
+                        "mailto", "projectx@gmail.com", null));
+                startActivity(Intent.createChooser(emailIntent, null));
             }
         });
 
