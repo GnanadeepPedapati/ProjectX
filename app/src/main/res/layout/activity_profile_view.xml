@@ -22,7 +22,7 @@
             android:layout_height="20dp"
             android:layout_gravity="right"
             android:layout_marginTop="20dp"
-            android:src="@drawable/fui_ic_check_circle_black_128dp" />
+            android:src="@drawable/pencil" />
 
         <ImageView
             android:id="@+id/profileImageView"
