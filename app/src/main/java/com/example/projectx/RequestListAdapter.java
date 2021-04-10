@@ -95,11 +95,17 @@ public class RequestListAdapter extends BaseAdapter {
                     .fitCenter()
                     .thumbnail(0.1f).circleCrop()
                     .into(imageView);
+
             Glide.with(context)
                     .clear(expandedImageView);
-        } else
+        } else {
             Glide.with(context)
                     .clear(imageView);
+            Glide.with(context)
+                    .clear(expandedImageView);
+
+        }
+
         expandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -111,6 +117,8 @@ public class RequestListAdapter extends BaseAdapter {
                     expandedImageView.setVisibility(View.VISIBLE);
                     Glide.with(context)
                             .load(imageStorage)
+                            .fitCenter()
+                            .useAnimationPool(true)
                             .into(expandedImageView);
                 }
             }

@@ -10,9 +10,9 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
         android:background="#36393f"
         android:gravity="center"
+        android:orientation="vertical"
         android:weightSum="100"
 
         >
@@ -23,43 +23,67 @@
             android:layout_height="1dp"
             android:layout_weight="50"
             android:gravity="center"
-            android:textColor="@color/white"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:textColor="@color/white">
 
-            <EditText
-                android:id="@+id/email"
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="50dp"
                 android:layout_marginRight="50dp"
-                android:hint="Email"
-                android:inputType="textEmailAddress" />
+                android:hint="Email">
 
 
-            <EditText
-                android:id="@+id/password"
+                <!--this is the actual edit text which takes the input-->
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/email"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textEmailAddress"
+                    android:textColor="@color/white" />
+
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="50dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginRight="50dp"
-                android:hint="Password"
-                android:inputType="textPassword" />
+                android:hint="Password">
+
+
+                <!--this is the actual edit text which takes the input-->
+                <com.google.android.material.textfield.TextInputEditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textPassword"
+                    android:id="@+id/password"
+                    android:textColor="@color/white" />
+
+
+            </com.google.android.material.textfield.TextInputLayout>
 
             <Button
                 android:id="@+id/emailSignIn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="Sign In"
-                android:textColor="@color/white"
-
                 android:background="@drawable/rounded_rectangle_holo_blue"
+                android:text="Sign In"
+
+                android:textColor="@color/white"
 
                 />
 
 
         </LinearLayout>
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -73,7 +97,7 @@
                 android:layout_marginLeft="10dp"
                 android:layout_marginRight="10dp"
                 android:text="Or"
-                android:textColor="#D3D6DC"/>
+                android:textColor="#D3D6DC" />
 
             <View
                 android:layout_width="match_parent"
@@ -81,8 +105,7 @@
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="30dp"
                 android:layout_toLeftOf="@id/tvText"
-                android:background="#B5B9C0"
-                />
+                android:background="#B5B9C0" />
 
             <View
                 android:layout_width="match_parent"
@@ -90,62 +113,62 @@
                 android:layout_centerVertical="true"
                 android:layout_marginRight="30dp"
                 android:layout_toRightOf="@id/tvText"
-                android:background="#B5B9C0"
-                />
+                android:background="#B5B9C0" />
 
         </RelativeLayout>
-<!--        <Button-->
-<!--            android:id="@+id/googleSignIn"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_marginTop="20dp"-->
-<!--            android:text="Sign In with Google"-->
-<!--            android:backgroundTint="@android:color/holo_blue_light"-->
+        <!--        <Button-->
+        <!--            android:id="@+id/googleSignIn"-->
+        <!--            android:layout_width="wrap_content"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:layout_marginTop="20dp"-->
+        <!--            android:text="Sign In with Google"-->
+        <!--            android:backgroundTint="@android:color/holo_blue_light"-->
 
-<!--            />-->
+        <!--            />-->
         <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_marginTop="30dp"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp">
+
             <ImageButton
                 android:id="@+id/googleSignIn"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
-                android:padding="10dp"
                 android:layout_alignParentTop="true"
                 android:layout_alignParentRight="true"
-                android:background="#36393f"
                 android:layout_margin="10dp"
+                android:background="#36393f"
+                android:padding="10dp"
                 android:scaleType="fitCenter"
                 android:src="@drawable/googleicon" />
+
             <ImageButton
                 android:id="@+id/googleSignIn1"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
-                android:padding="10dp"
-                android:layout_margin="10dp"
                 android:layout_alignParentTop="true"
                 android:layout_alignParentRight="true"
+                android:layout_margin="10dp"
                 android:background="#36393f"
+                android:padding="10dp"
                 android:scaleType="fitCenter"
                 android:src="@drawable/facebookicon" />
         </LinearLayout>
 
 
-<!--        <Button-->
-<!--            android:id="@+id/facebookSignIn"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:text="Sign In with Facebook"-->
-<!--            />-->
+        <!--        <Button-->
+        <!--            android:id="@+id/facebookSignIn"-->
+        <!--            android:layout_width="wrap_content"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:text="Sign In with Facebook"-->
+        <!--            />-->
         <TextView
             android:id="@+id/signUpLink"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Don't have account? Create here"
             android:textColor="@color/white"
-            android:textStyle="italic"
-            />
+            android:textStyle="italic" />
     </LinearLayout>
 
 
