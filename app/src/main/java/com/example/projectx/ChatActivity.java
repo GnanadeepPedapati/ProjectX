@@ -1,6 +1,7 @@
 package com.example.projectx;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -61,6 +62,8 @@ public class ChatActivity extends AppCompatActivity {
     FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
     String updateHasReplied;
     String otherUser;
+
+    private int PICK_IMAGE_REQUEST = 1;
 
 
     @Override
@@ -288,6 +291,15 @@ public class ChatActivity extends AppCompatActivity {
         if (Objects.nonNull(childEventListener))
             mDatabase.child(chatId).child("messages").removeEventListener(childEventListener);
         super.onPause();
+    }
+
+
+    private void attachFile() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
+
     }
 
 }

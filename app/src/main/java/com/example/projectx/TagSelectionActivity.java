@@ -1,11 +1,5 @@
 package com.example.projectx;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
-
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
@@ -17,10 +11,12 @@ import android.util.TypedValue;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
+import android.widget.TextView;
 
-import com.example.projectx.model.ResponseOverview;
-import com.example.projectx.model.UserDetails;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -34,14 +30,11 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
@@ -51,7 +44,7 @@ public class TagSelectionActivity extends AppCompatActivity {
 
     EditText tagsFilter;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
-
+    TextView skipNow;
     private List<String> selectedTags = new ArrayList<>();
     private List<String> sourceTags = new ArrayList<>();
     @Override
@@ -59,7 +52,6 @@ public class TagSelectionActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tag_selection);
         setSourceTags(sourceTags);
-
         getTags();
         tagsFilter = findViewById(R.id.filterTags);
         Button tagSelectionContinue = findViewById(R.id.tagSelectionContinue);
@@ -67,6 +59,16 @@ public class TagSelectionActivity extends AppCompatActivity {
         tagSelectionContinue.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                assignTagsToUser();
+            }
+        });
+
+        skipNow = findViewById(R.id.skip_now);
+
+        skipNow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectedTags.clear();
                 assignTagsToUser();
             }
         });
@@ -93,9 +95,7 @@ public class TagSelectionActivity extends AppCompatActivity {
     }
 
     private void getTags() {
-
         db.collection("Tags")
-
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
@@ -111,18 +111,16 @@ public class TagSelectionActivity extends AppCompatActivity {
                         }
                     }
                 });
-
     }
 
 
     private void assignTagsToUser() {
         String uid = UserDetailsUtil.getUID();
-
-
         DocumentReference documentReference = db.collection("UserDetails").document(uid);
         for (String tag : selectedTags) {
             assignUserToTag(tag, uid);
         }
+
 
         documentReference.update("tags", selectedTags).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override

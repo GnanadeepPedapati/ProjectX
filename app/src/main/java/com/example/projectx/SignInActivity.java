@@ -14,13 +14,21 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 
 import com.example.projectx.model.UserDetails;
+import com.facebook.AccessToken;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.login.LoginResult;
+import com.facebook.login.widget.LoginButton;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
@@ -39,6 +47,7 @@ public class SignInActivity extends Activity implements View.OnClickListener {
     EditText emailInput;
     EditText passwordInput;
     private FirebaseAuth auth;
+    CallbackManager mCallbackManager;
 
 
     @Override
@@ -50,9 +59,11 @@ public class SignInActivity extends Activity implements View.OnClickListener {
         emailInput = findViewById(R.id.email);
         passwordInput = findViewById(R.id.password);
         ImageButton googleSignIn = findViewById(R.id.googleSignIn);
+        ImageButton fbSignIn = findViewById(R.id.faceBookSignIn);
         Button emailSignIn = findViewById(R.id.emailSignIn);
         googleSignIn.setOnClickListener(this);
         emailSignIn.setOnClickListener(this);
+        fbSignIn.setOnClickListener(this);
         TextView signUpTextView = findViewById(R.id.signUpLink);
 
         auth = FirebaseAuth.getInstance();
@@ -65,7 +76,33 @@ public class SignInActivity extends Activity implements View.OnClickListener {
             }
         });
 
+
+        // Initialize Facebook Login button
+
+        mCallbackManager = CallbackManager.Factory.create();
+        LoginButton loginButton = findViewById(R.id.login_button_fb);
+        loginButton.setReadPermissions("email", "public_profile", "user_friends");
+        loginButton.registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                Log.d(TAG, "facebook:onSuccess:" + loginResult);
+                handleFacebookAccessToken(loginResult.getAccessToken());
+            }
+
+            @Override
+            public void onCancel() {
+                Log.d(TAG, "facebook:onCancel");
+            }
+
+            @Override
+            public void onError(FacebookException error) {
+                Log.d(TAG, "facebook:onError", error);
+            }
+        });
+// ...
+
     }
+
 
     public void createSignInIntent() {
         // [START auth_fui_create_intent]
@@ -84,9 +121,29 @@ public class SignInActivity extends Activity implements View.OnClickListener {
         // [END auth_fui_create_intent]
     }
 
+
+    public void createSignInIntentFB() {
+        // [START auth_fui_create_intent]
+        // Choose authentication providers
+        List<AuthUI.IdpConfig> providers = Arrays.asList(
+                new AuthUI.IdpConfig.FacebookBuilder().build()
+        );
+
+        // Create and launch sign-in intent
+        startActivityForResult(
+                AuthUI.getInstance()
+                        .createSignInIntentBuilder()
+                        .setAvailableProviders(providers)
+                        .build(),
+                RC_SIGN_IN);
+        // [END auth_fui_create_intent]
+    }
+
+
     // [START auth_fui_result]
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        mCallbackManager.onActivityResult(requestCode, resultCode, data);
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == RC_SIGN_IN) {
@@ -156,6 +213,8 @@ public class SignInActivity extends Activity implements View.OnClickListener {
             createSignInIntent();
         } else if (R.id.emailSignIn == v.getId()) {
             signInWithEmailPassword();
+        } else if (v.getId() == R.id.faceBookSignIn) {
+            createSignInIntentFB();
         }
     }
 
@@ -222,6 +281,32 @@ public class SignInActivity extends Activity implements View.OnClickListener {
         finish();
     }
 
+
+    private void handleFacebookAccessToken(AccessToken token) {
+        Log.d(TAG, "handleFacebookAccessToken:" + token);
+
+        AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
+        auth.signInWithCredential(credential)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            Log.d(TAG, "signInWithCredential:success");
+                            FirebaseUser user = auth.getCurrentUser();
+                            Toast.makeText(SignInActivity.this, "Facebook Successful Login !.",
+                                    Toast.LENGTH_SHORT).show();
+                            insertToFirebase(user);
+                            postLogin();
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            Log.w(TAG, "signInWithCredential:failure", task.getException());
+                            Toast.makeText(SignInActivity.this, "Authentication failed.",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+    }
 
     // [END auth_fui_result]
 }

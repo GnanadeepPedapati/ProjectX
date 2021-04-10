@@ -143,7 +143,7 @@
                 android:src="@drawable/googleicon" />
 
             <ImageButton
-                android:id="@+id/googleSignIn1"
+                android:id="@+id/faceBookSignIn"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:layout_alignParentTop="true"
@@ -153,6 +153,16 @@
                 android:padding="10dp"
                 android:scaleType="fitCenter"
                 android:src="@drawable/facebookicon" />
+
+            <com.facebook.login.widget.LoginButton
+                android:id="@+id/login_button_fb"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="30dp"
+                android:layout_marginBottom="30dp" />
+
+
         </LinearLayout>
 
 

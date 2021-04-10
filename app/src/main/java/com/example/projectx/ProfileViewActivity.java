@@ -2,11 +2,14 @@ package com.example.projectx;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.drawable.DrawableCompat;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,10 +28,14 @@ import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+
+import java.util.Random;
+
 public class ProfileViewActivity extends AppCompatActivity {
 
 
     Button changePassword, myTags, signOut,helpCenter;
+    TextView profileTitleLetter;
 
     TextView profileName, textEmail, textPhone;
     FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
@@ -41,9 +49,9 @@ public class ProfileViewActivity extends AppCompatActivity {
         profileName = findViewById(R.id.profileName);
         textEmail = findViewById(R.id.profileEmail);
         textPhone = findViewById(R.id.profilePhone);
+        profileTitleLetter = findViewById(R.id.profileTitleLetter);
 
         loadDetails();
-
 
         changePassword = findViewById(R.id.changePassword);
         myTags = findViewById(R.id.profileTagsButton);
@@ -89,6 +97,15 @@ public class ProfileViewActivity extends AppCompatActivity {
 
         FirebaseUser user = UserDetailsUtil.getUser();
         profileName.setText(user.getDisplayName());
+        Random rnd = new Random();
+        int color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
+
+        View iconContainer = findViewById(R.id.icon_container);
+        Drawable background = iconContainer.getBackground();
+        DrawableCompat.setTint(background, color);
+
+        if (user.getDisplayName() != null && user.getDisplayName().length() > 1)
+            profileTitleLetter.setText(user.getDisplayName().substring(0, 1).toUpperCase());
         textEmail.setText(user.getEmail());
         textPhone.setText(user.getPhoneNumber());
 
