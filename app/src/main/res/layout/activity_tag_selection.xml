@@ -16,8 +16,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Time to Tag Yourself!"
+            android:id="@+id/tag_act_heading"
             android:textColor="@color/white"
-            android:layout_margin="20dp"
+            android:layout_marginTop="20dp"
             android:textSize="20dp"
             android:textStyle="bold"
             android:gravity="center">
@@ -49,6 +50,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:background="#474954"
+                android:paddingTop="20dp"
                 android:paddingLeft="10dp"
                 android:textColor="@color/white"
                 android:hint="Search For Tags" />

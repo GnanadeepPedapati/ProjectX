@@ -9,9 +9,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.example.projectx.model.MessageModel;
 import com.example.projectx.model.ResponseOverview;
 import com.example.projectx.model.UserDetails;
@@ -29,6 +31,8 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -41,13 +45,61 @@ public class ResponsesListActivity extends Activity {
     DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference().child("Chats");
     int callsInitiated = 0;
     private SwipeRefreshLayout pullToRefresh;
-
+    FirebaseStorage storage = FirebaseStorage.getInstance();
+    StorageReference storageReference = storage.getReference();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_responses_list);
 
+        String createdDate = getIntent().getStringExtra("createdDate");
+        final String imageUrl = getIntent().getStringExtra("imageUrl");
+        TextView createddateText = findViewById(R.id.request_create_time);
+        createddateText.setText(createdDate);
+
+        View expandButton = findViewById(R.id.request_heading);
+        ImageView expandedImageView = findViewById(R.id.expanded_image_view);
+
+        ImageView imageView = (ImageView) findViewById(R.id.bitmap_image);
+        if (Objects.nonNull(imageUrl) && imageUrl != "") {
+            StorageReference imageStorage = storageReference.child(imageUrl);
+            imageView.setVisibility(View.VISIBLE);
+            expandButton.setVisibility(View.VISIBLE);
+            Glide.with(getApplicationContext())
+                    .load(imageStorage)
+                    .fitCenter()
+                    .thumbnail(0.1f).circleCrop()
+                    .into(imageView);
+
+            Glide.with(getApplicationContext())
+                    .clear(expandedImageView);
+        } else {
+            Glide.with(getApplicationContext())
+                    .clear(imageView);
+            Glide.with(getApplicationContext())
+                    .clear(expandedImageView);
+
+        }
+
+        expandButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (Objects.nonNull(imageUrl) && imageUrl != "") {
+
+                    StorageReference imageStorage = storageReference.child(imageUrl);
+                    imageView.setVisibility(View.GONE);
+                    Glide.with(getApplicationContext()).clear(imageView);
+                    expandedImageView.setVisibility(View.VISIBLE);
+                    Glide.with(getApplicationContext())
+                            .load(imageStorage)
+                            .fitCenter()
+                            .useAnimationPool(true)
+                            .into(expandedImageView);
+                }
+            }
+        });
+        ;
         pullToRefresh = findViewById(R.id.pullToRefresh);
 
 
@@ -105,8 +157,6 @@ public class ResponsesListActivity extends Activity {
                                 responseListAdapter.notifyDataSetChanged();
 
                                 getDisplayName(responseOverview, userRequest.getReceiver());
-
-
 
 
                             }
