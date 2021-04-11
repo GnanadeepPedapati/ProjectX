@@ -47,6 +47,7 @@ public class TagSelectionActivity extends AppCompatActivity {
     TextView skipNow;
     private List<String> selectedTags = new ArrayList<>();
     private List<String> sourceTags = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,14 +57,22 @@ public class TagSelectionActivity extends AppCompatActivity {
         tagsFilter = findViewById(R.id.filterTags);
         Button tagSelectionContinue = findViewById(R.id.tagSelectionContinue);
 
+
         tagSelectionContinue.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 assignTagsToUser();
             }
         });
-
         skipNow = findViewById(R.id.skip_now);
+
+        if (getCallingActivity() != null && "com.example.projectx.ProfileViewActivity".equals(getCallingActivity().getClassName())) {
+            TextView tagHeading = findViewById(R.id.tag_act_heading);
+            tagHeading.setText("Your Tags.You can select more from below list");
+            tagSelectionContinue.setText("Update");
+            skipNow.setVisibility(View.GONE);
+        }
+
 
         skipNow.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -92,6 +101,8 @@ public class TagSelectionActivity extends AppCompatActivity {
             }
         });
 
+        getExistingTags();
+
     }
 
     private void getTags() {
@@ -113,6 +124,21 @@ public class TagSelectionActivity extends AppCompatActivity {
                 });
     }
 
+
+    private void getExistingTags() {
+        String uid = UserDetailsUtil.getUID();
+        DocumentReference documentReference = db.collection("UserDetails").document(uid);
+        documentReference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+
+                if (task.isSuccessful()) {
+                    selectedTags = (List<String>) task.getResult().getData().get("tags");
+                    loadExistingTags();
+                }
+            }
+        });
+    }
 
     private void assignTagsToUser() {
         String uid = UserDetailsUtil.getUID();
@@ -192,6 +218,13 @@ public class TagSelectionActivity extends AppCompatActivity {
 
         chipGroup.addView(chip);
 
+    }
+
+
+    private void loadExistingTags() {
+
+        for (String tagName : selectedTags)
+            addTagToSelection(tagName);
     }
 
     private void addTagToSourceGroup(String tagName) {

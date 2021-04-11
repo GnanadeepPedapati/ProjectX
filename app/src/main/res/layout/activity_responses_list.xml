@@ -1,35 +1,121 @@
 <?xml version="1.0" encoding="utf-8"?>
+    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:fillViewport="false">
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="@color/white"
+    android:orientation="vertical"
     tools:context=".ResponsesListActivity">
-    <TextView android:layout_height="wrap_content"
+
+
+
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:card_view="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
-        android:textStyle="bold"
-        android:textSize="30dp"
-        android:id="@+id/request_text_heading"
-        android:padding="8dp"
-        android:background ="#2B60DE"
-        android:textColor="@color/white"
-        android:text="I need tenaximic acid 500ml, Please share the details of shop"/>
+        android:layout_height="match_parent"
+        android:focusable="true"
+        android:orientation="vertical">
+
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="15dp"
+            card_view:cardElevation="10dp">
+
+            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#474954"
+                android:orientation="vertical">
+                <TextView
+                    android:id="@+id/request_create_time"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="10dp"
+                    android:textColor="@color/white"
+                    android:layout_weight="3"
+                    android:gravity="left"
+                    android:text="28/11/2012"
+                    android:textSize="10dp" />
+
+
+                <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:id="@+id/request_heading"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:paddingBottom="10dp"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
+                    android:orientation="horizontal">
+
+
+                    <TextView
+                        android:id="@+id/request_text_heading"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="3"
+                        android:textColor="@color/white"
+                        android:maxLines="4"
+                        android:layout_marginLeft="3dp"
+                        android:text="Sample request sent to user"
+
+                        android:textSize="15dp"
+                        android:ems="3"
+                        android:textStyle="bold" />
+
+                    <ImageView
+                        android:id="@+id/bitmap_image"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:visibility="gone" />
+
+
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/expanded_image_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+
+
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+    </LinearLayout>
+
+
+
+
+
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/pullToRefresh"
         android:layout_width="match_parent"
-        android:background="#36393f"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="#36393f">
 
-    <ListView
-        android:id="@+id/incoming_list"
-        android:layout_width="match_parent"
-        android:divider="@drawable/list_divider"
-        android:dividerHeight="1dp"
-        android:layout_height="match_parent"></ListView>
+        <ListView
+            android:id="@+id/incoming_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:divider="@drawable/list_divider"
+            android:dividerHeight="1dp"></ListView>
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
 </LinearLayout>
+</ScrollView>

@@ -77,6 +77,8 @@ public class RequestListAdapter extends BaseAdapter {
                 Intent intent = new Intent(context, ResponsesListActivity.class);
                 intent.putExtra("requestId", requestListModel.getRequestId());
                 intent.putExtra("requestText", requestListModel.getRequest());
+                intent.putExtra("imageUrl", requestListModel.getImageUrl());
+                intent.putExtra("createdDate", requestListModel.getCreatedAt());
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 Toast.makeText(context, requestListModel.getRequestId(), Toast.LENGTH_LONG).show();
                 context.startActivity(intent);
@@ -125,11 +127,17 @@ public class RequestListAdapter extends BaseAdapter {
         });
 
 
-        responsesCount.setText("View all " +String.valueOf(requestListModel.getResponsesCount()) + " Responses");
         if(requestListModel.getResponsesCount() == 0){
             responsesCount.setText("No Responses Yet");
-            responsesCount.setEnabled(false);
+            responsesCount.setEnabled(true);
         }
+        else
+        {
+            responsesCount.setText("View all " +String.valueOf(requestListModel.getResponsesCount()) + " Responses");
+            responsesCount.setEnabled(true);
+
+        }
+
         //sets the text for item name and item description from the current item object
         requestText.setText(requestListModel.getRequest());
         if (requestListModel.getCreatedAt() != null && requestListModel.getCreatedAt() != "") {

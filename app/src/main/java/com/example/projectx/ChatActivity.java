@@ -285,7 +285,6 @@ public class ChatActivity extends AppCompatActivity {
             }
         };
 
-        mPostReference.child(chatId).child("messages").addChildEventListener(childEventListener);
 
         mPostReference.child(chatId).child("messages").addListenerForSingleValueEvent(new ValueEventListener() {
             public void onDataChange(DataSnapshot dataSnapshot) {

@@ -78,7 +78,8 @@ public class ProfileViewActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(ProfileViewActivity.this, TagSelectionActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent,0, null);
+
             }
         });
         helpCenter.setOnClickListener(new View.OnClickListener() {
