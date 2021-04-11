@@ -103,7 +103,7 @@ public class HomeFragment extends Fragment {
         sBar = getView().findViewById(R.id.seekBar1);
         tView = getView().findViewById(R.id.textview1);
 
-        tView.setText(sBar.getProgress() + "/" + sBar.getMax());
+        tView.setText(sBar.getProgress()/2.0 + " Km");
 
         sBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             int pval = 0;
@@ -111,6 +111,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 pval = progress;
+                tView.setText(pval/2.0 + " Km");
             }
 
             @Override
@@ -120,7 +121,7 @@ public class HomeFragment extends Fragment {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                tView.setText(pval + "/" + seekBar.getMax());
+                tView.setText(pval/2.0 + " Km");
             }
         });
         attachButton.setOnClickListener(new View.OnClickListener() {

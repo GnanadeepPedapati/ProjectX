@@ -18,6 +18,7 @@
         tools:context=".ProfileViewActivity">
 
         <ImageView
+            android:id="@+id/editprofile"
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:layout_gravity="right"
@@ -56,7 +57,7 @@
             android:gravity="center"
             android:padding="5dp"
             android:textColor="@color/white"
-            android:text="Gnanadeepssss"
+            android:text="User"
             android:textSize="25dp" />
 
 
@@ -67,7 +68,7 @@
             android:textColor="@color/white"
             android:gravity="center"
             android:padding="5dp"
-            android:text="gnana.deeprk19961128@gmail.com"
+            android:text=""
          />
 
 

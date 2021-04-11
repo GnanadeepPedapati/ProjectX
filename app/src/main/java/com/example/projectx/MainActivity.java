@@ -60,14 +60,11 @@ public class MainActivity extends Activity {
                 if (userLoggedIn) {
                     boolean myServiceRunning = isMyServiceRunning(NotificationService.class);
 
-//                    if (!myServiceRunning) {
-//                        Intent intent = new Intent(MainActivity.this, LocationFetchService.class);
-//                        startService(intent);
-//                    }
-//                    postLogin();
-                    Intent i = new Intent(MainActivity.this, TagSelectionActivity.class);
-                    startActivity(i);
-                    finish();
+                    if (!myServiceRunning) {
+                        Intent intent = new Intent(MainActivity.this, LocationFetchService.class);
+                        startService(intent);
+                    }
+                    postLogin();
                 } else {
 
                     Intent i = new Intent(MainActivity.this, SignInActivity.class);

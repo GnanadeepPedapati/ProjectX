@@ -51,12 +51,21 @@ public class ProfileViewActivity extends AppCompatActivity {
         textPhone = findViewById(R.id.profilePhone);
         profileTitleLetter = findViewById(R.id.profileTitleLetter);
 
+
         loadDetails();
 
         changePassword = findViewById(R.id.changePassword);
         myTags = findViewById(R.id.profileTagsButton);
         helpCenter = findViewById(R.id.profileHelp);
         signOut = findViewById(R.id.signOut);
+        ImageView editprofile = findViewById(R.id.editprofile);
+        editprofile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(ProfileViewActivity.this, EditProfileActivity.class);
+                startActivity(intent);
+            }
+        });
         signOut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -68,7 +77,7 @@ public class ProfileViewActivity extends AppCompatActivity {
         myTags.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(ProfileViewActivity.this, EditProfileActivity.class);
+                Intent intent = new Intent(ProfileViewActivity.this, TagSelectionActivity.class);
                 startActivity(intent);
             }
         });
@@ -114,72 +123,142 @@ public class ProfileViewActivity extends AppCompatActivity {
 
     private AlertDialog buildChangePasswordDialog() {
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//        AlertDialog.Builder builder = new AlertDialog.Builder(this);
         // Get the layout inflater
-        LayoutInflater inflater = LayoutInflater.from(this);
 
         // Inflate and set the layout for the dialog
         // Pass null as the parent view because its going in the dialog layout
-        View dialogView = inflater.
-                inflate(R.layout.dialog_change_password, null);
-        builder.setView(dialogView)
-                // Add action buttons
-                .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
+        LayoutInflater layoutInflater = LayoutInflater.from(this);
+        View promptView = layoutInflater.inflate(R.layout.dialog_change_password, null);
 
-                        EditText oldPassword = dialogView.findViewById(R.id.oldPassword);
-                        String oldPasswordString = oldPassword.getText().toString();
+        final AlertDialog alertD = new AlertDialog.Builder(this).create();
 
-                        EditText newPassword = dialogView.findViewById(R.id.newPassword);
-                        String newPasswordString = newPassword.getText().toString();
+//        EditText userInput = (EditText) promptView.findViewById(R.id.display_always);
 
-                        EditText confirmPassword = dialogView.findViewById(R.id.newPassword);
-                        String confirmPasswordString = confirmPassword.getText().toString();
+        Button btnAdd1 = (Button) promptView.findViewById(R.id.confirm_request);
+
+        Button btnAdd2 = (Button) promptView.findViewById(R.id.cancel_request);
+
+        btnAdd1.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                EditText oldPassword = promptView.findViewById(R.id.oldPassword);
+                String oldPasswordString = oldPassword.getText().toString();
+
+                EditText newPassword = promptView.findViewById(R.id.newPassword);
+                String newPasswordString = newPassword.getText().toString();
+
+                EditText confirmPassword = promptView.findViewById(R.id.newPassword);
+                String confirmPasswordString = confirmPassword.getText().toString();
 
 
-                        if (newPasswordString.equals(confirmPasswordString)) {
-                            FirebaseUser user = UserDetailsUtil.getUser();
-                            AuthCredential credential = EmailAuthProvider
-                                    .getCredential(user.getEmail(), oldPasswordString);
-                            user.reauthenticate(credential)
-                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<Void> task) {
-                                            if (task.isSuccessful()) {
-                                                user.updatePassword(newPasswordString).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                    @Override
-                                                    public void onComplete(@NonNull Task<Void> task) {
-                                                        if (task.isSuccessful()) {
-                                                            Toast.makeText(ProfileViewActivity.this, "Password updated", Toast.LENGTH_LONG).show();
-                                                        } else {
-                                                            Toast.makeText(ProfileViewActivity.this, "Password  not updated", Toast.LENGTH_LONG).show();
-                                                        }
-                                                    }
-                                                });
-                                            } else {
-                                                buildChangePasswordDialog().show();
-                                                Toast.makeText(ProfileViewActivity.this, "Your current password is incorrect", Toast.LENGTH_LONG).show();
+                if (newPasswordString.equals(confirmPasswordString)) {
+                    FirebaseUser user = UserDetailsUtil.getUser();
+                    AuthCredential credential = EmailAuthProvider
+                            .getCredential(user.getEmail(), oldPasswordString);
+                    user.reauthenticate(credential)
+                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if (task.isSuccessful()) {
+                                        user.updatePassword(newPasswordString).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                if (task.isSuccessful()) {
+                                                    Toast.makeText(ProfileViewActivity.this, "Password updated", Toast.LENGTH_LONG).show();
+                                                } else {
+                                                    Toast.makeText(ProfileViewActivity.this, "Password  not updated", Toast.LENGTH_LONG).show();
+                                                }
                                             }
-                                        }
-                                    });
+                                        });
+                                    } else {
+                                        buildChangePasswordDialog().show();
+                                        Toast.makeText(ProfileViewActivity.this, "Your current password is incorrect", Toast.LENGTH_LONG).show();
+                                    }
+                                }
+                            });
 
-                        } else {
-                            Toast.makeText(ProfileViewActivity.this, "Passwords don't match", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(ProfileViewActivity.this, "Passwords don't match", Toast.LENGTH_LONG).show();
 
-                        }
+                }
 
-                    }
-                })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
+            }
+        });
 
-                        dialog.dismiss();
-                    }
-                });
+        btnAdd2.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+
+                alertD.dismiss();
+
+            }
+        });
+
+        alertD.setView(promptView);
+
+        alertD.show();
+
+        return alertD;
+
+//        View dialogView = inflater.
+//                inflate(R.layout.dialog_change_password, null);
+//        builder.setView(dialogView)
+//                // Add action buttons
+//                .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//
+//                        EditText oldPassword = dialogView.findViewById(R.id.oldPassword);
+//                        String oldPasswordString = oldPassword.getText().toString();
+//
+//                        EditText newPassword = dialogView.findViewById(R.id.newPassword);
+//                        String newPasswordString = newPassword.getText().toString();
+//
+//                        EditText confirmPassword = dialogView.findViewById(R.id.newPassword);
+//                        String confirmPasswordString = confirmPassword.getText().toString();
+//
+//
+//                        if (newPasswordString.equals(confirmPasswordString)) {
+//                            FirebaseUser user = UserDetailsUtil.getUser();
+//                            AuthCredential credential = EmailAuthProvider
+//                                    .getCredential(user.getEmail(), oldPasswordString);
+//                            user.reauthenticate(credential)
+//                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+//                                        @Override
+//                                        public void onComplete(@NonNull Task<Void> task) {
+//                                            if (task.isSuccessful()) {
+//                                                user.updatePassword(newPasswordString).addOnCompleteListener(new OnCompleteListener<Void>() {
+//                                                    @Override
+//                                                    public void onComplete(@NonNull Task<Void> task) {
+//                                                        if (task.isSuccessful()) {
+//                                                            Toast.makeText(ProfileViewActivity.this, "Password updated", Toast.LENGTH_LONG).show();
+//                                                        } else {
+//                                                            Toast.makeText(ProfileViewActivity.this, "Password  not updated", Toast.LENGTH_LONG).show();
+//                                                        }
+//                                                    }
+//                                                });
+//                                            } else {
+//                                                buildChangePasswordDialog().show();
+//                                                Toast.makeText(ProfileViewActivity.this, "Your current password is incorrect", Toast.LENGTH_LONG).show();
+//                                            }
+//                                        }
+//                                    });
+//
+//                        } else {
+//                            Toast.makeText(ProfileViewActivity.this, "Passwords don't match", Toast.LENGTH_LONG).show();
+//
+//                        }
+//
+//                    }
+//                })
+//                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+//                    public void onClick(DialogInterface dialog, int id) {
+//
+//                        dialog.dismiss();
+//                    }
+//                });
 
 
-        return builder.create();
+//        return builder.create();
     }
 
 
