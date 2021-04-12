@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:fillViewport="false">
+
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="#36393f"
     android:orientation="vertical"
     tools:context=".ResponsesListActivity">
-
-
+    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:fillViewport="false">
 
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -29,6 +29,7 @@
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:id="@+id/responselistcard"
             android:paddingBottom="15dp"
             card_view:cardElevation="10dp">
 
@@ -70,14 +71,14 @@
                         android:layout_marginLeft="3dp"
                         android:text="Sample request sent to user"
 
-                        android:textSize="15dp"
+                        android:textSize="18dp"
                         android:ems="3"
-                        android:textStyle="bold" />
+                         />
 
                     <ImageView
                         android:id="@+id/bitmap_image"
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
                         android:visibility="gone" />
 
 
@@ -96,17 +97,11 @@
         </androidx.cardview.widget.CardView>
 
     </LinearLayout>
-
-
-
-
-
-
+    </ScrollView>
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/pullToRefresh"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#36393f">
+        android:layout_height="wrap_content">
 
         <ListView
             android:id="@+id/incoming_list"
@@ -114,8 +109,6 @@
             android:layout_height="match_parent"
             android:divider="@drawable/list_divider"
             android:dividerHeight="1dp"></ListView>
-
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
 </LinearLayout>
-</ScrollView>
+

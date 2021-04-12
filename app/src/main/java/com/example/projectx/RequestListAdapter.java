@@ -27,6 +27,7 @@ public class RequestListAdapter extends BaseAdapter {
 
     private Context context;
     private List<RequestListModel> listItems;
+    private boolean isExpanded;
     StorageReference storageReference;
 
     RequestListAdapter(Context context, List<RequestListModel> listItems) {
@@ -107,22 +108,39 @@ public class RequestListAdapter extends BaseAdapter {
                     .clear(expandedImageView);
 
         }
-
-        expandButton.setOnClickListener(new View.OnClickListener() {
+        View view = convertView;
+        view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (Objects.nonNull(requestListModel.getImageUrl()) && requestListModel.getImageUrl() != "") {
+                if(isExpanded == false){
+                    if (Objects.nonNull(requestListModel.getImageUrl()) && requestListModel.getImageUrl() != "") {
 
+                        StorageReference imageStorage = storageReference.child(requestListModel.getImageUrl());
+                        imageView.setVisibility(View.GONE);
+                        Glide.with(context).clear(imageView);
+                        expandedImageView.setVisibility(View.VISIBLE);
+                        Glide.with(context)
+                                .load(imageStorage)
+                                .fitCenter()
+                                .useAnimationPool(true)
+                                .into(expandedImageView);
+                        isExpanded = true;
+                    }
+                }
+                else{
+                    imageView.setVisibility(View.VISIBLE);
+                    expandedImageView.setVisibility(View.GONE);
+                    Glide.with(context).clear(expandedImageView);
                     StorageReference imageStorage = storageReference.child(requestListModel.getImageUrl());
-                    imageView.setVisibility(View.GONE);
-                    Glide.with(context).clear(imageView);
-                    expandedImageView.setVisibility(View.VISIBLE);
+
                     Glide.with(context)
                             .load(imageStorage)
                             .fitCenter()
-                            .useAnimationPool(true)
-                            .into(expandedImageView);
+                            .thumbnail(0.1f).circleCrop()
+                            .into(imageView);
+                    isExpanded = false;
                 }
+
             }
         });
 

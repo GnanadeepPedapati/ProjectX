@@ -2,6 +2,7 @@ package com.example.projectx;
 
 import androidx.annotation.NonNull;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import lombok.SneakyThrows;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -34,11 +35,15 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Objects;
 
 public class ResponsesListActivity extends Activity {
+
+    private boolean isExpanded;
 
     ArrayList<ResponseOverview> responseOverviews = new ArrayList<>();
     ResponseListAdapter responseListAdapter;
@@ -48,6 +53,7 @@ public class ResponsesListActivity extends Activity {
     FirebaseStorage storage = FirebaseStorage.getInstance();
     StorageReference storageReference = storage.getReference();
 
+    @SneakyThrows
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,8 +61,25 @@ public class ResponsesListActivity extends Activity {
 
         String createdDate = getIntent().getStringExtra("createdDate");
         final String imageUrl = getIntent().getStringExtra("imageUrl");
-        TextView createddateText = findViewById(R.id.request_create_time);
-        createddateText.setText(createdDate);
+        TextView createdDateText = findViewById(R.id.request_create_time);
+        if(createdDate != null) {
+            SimpleDateFormat sfd = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss a");
+            Date date = sfd.parse(createdDate);
+            SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMdd");
+            if(sdf1.format(date).compareTo(sdf1.format(new Date())) <0){
+                sfd = new SimpleDateFormat("dd/MM/yyyy HH:mm a");
+            }
+            else{
+                sfd = new SimpleDateFormat("HH:mm a");
+            }
+
+            String text =  sfd.format(date);
+//                String date = sfd.format(new Date(messageModel.getMessageTime()).getTime());
+//                dateTV.setText(text);
+            createdDateText.setText(text);
+        }
+
+        View card = findViewById(R.id.responselistcard);
 
         View expandButton = findViewById(R.id.request_heading);
         ImageView expandedImageView = findViewById(R.id.expanded_image_view);
@@ -82,24 +105,41 @@ public class ResponsesListActivity extends Activity {
 
         }
 
-        expandButton.setOnClickListener(new View.OnClickListener() {
+        View view = card;
+        view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (Objects.nonNull(imageUrl) && imageUrl != "") {
+                if(isExpanded == false){
+                    if (Objects.nonNull(imageUrl) && imageUrl != "") {
 
+                        StorageReference imageStorage = storageReference.child(imageUrl);
+                        imageView.setVisibility(View.GONE);
+                        Glide.with(getApplicationContext()).clear(imageView);
+                        expandedImageView.setVisibility(View.VISIBLE);
+                        Glide.with(getApplicationContext())
+                                .load(imageStorage)
+                                .fitCenter()
+                                .useAnimationPool(true)
+                                .into(expandedImageView);
+                        isExpanded = true;
+                    }
+                }
+                else{
+                    imageView.setVisibility(View.VISIBLE);
+                    expandedImageView.setVisibility(View.GONE);
+                    Glide.with(getApplicationContext()).clear(expandedImageView);
                     StorageReference imageStorage = storageReference.child(imageUrl);
-                    imageView.setVisibility(View.GONE);
-                    Glide.with(getApplicationContext()).clear(imageView);
-                    expandedImageView.setVisibility(View.VISIBLE);
+
                     Glide.with(getApplicationContext())
                             .load(imageStorage)
                             .fitCenter()
-                            .useAnimationPool(true)
-                            .into(expandedImageView);
+                            .thumbnail(0.1f).circleCrop()
+                            .into(imageView);
+                    isExpanded = false;
                 }
+
             }
         });
-        ;
         pullToRefresh = findViewById(R.id.pullToRefresh);
 
 
