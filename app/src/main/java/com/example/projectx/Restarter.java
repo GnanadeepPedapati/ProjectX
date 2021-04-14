@@ -20,7 +20,7 @@ public class Restarter extends BroadcastReceiver {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             //context.startForegroundService(new Intent(context, NotificationService.class));
         } else {
-           // context.startService(new Intent(context, NotificationService.class));
+            // context.startService(new Intent(context, NotificationService.class));
         }
     }
 

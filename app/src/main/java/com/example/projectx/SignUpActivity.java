@@ -35,10 +35,13 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -98,6 +101,7 @@ public class SignUpActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(Void aVoid) {
                         Log.d("Insert", "DocumentSnapshot successfully written!");
+                        updateToken(userDetails.getUid());
 
                     }
                 })
@@ -108,6 +112,50 @@ public class SignUpActivity extends AppCompatActivity {
                     }
                 });
         ;
+
+    }
+
+
+    private void updateToken(String uid) {
+
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(new OnCompleteListener<String>() {
+                    @Override
+                    public void onComplete(@NonNull Task<String> task) {
+                        if (!task.isSuccessful()) {
+                            Log.w(TAG, "Fetching FCM registration token failed", task.getException());
+                            return;
+                        }
+
+                        // Get new FCM registration token
+                        String token = task.getResult();
+                        if (uid != null) {
+                            FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+                            Map<String, Object> userDetails = new HashMap<>();
+                            userDetails.put("token", token);
+                            db.collection("UserDetails")
+                                    .document(UserDetailsUtil.getUID())
+                                    .set(userDetails, SetOptions.merge())
+                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            Log.d("Insert", "DocumentSnapshot successfully written!");
+
+                                        }
+                                    })
+                                    .addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            Log.w(TAG, "Error writing document", e);
+                                        }
+                                    });
+
+                        }
+
+                    }
+                });
+
 
     }
 
@@ -126,10 +174,6 @@ public class SignUpActivity extends AppCompatActivity {
             displayToast("Passwords don't match");
 
         else {
-
-            UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
-                    .setDisplayName("Jane Q. User")
-                    .build();
 
             auth.createUserWithEmailAndPassword(email, password)
                     .addOnCompleteListener(SignUpActivity.this, new OnCompleteListener<AuthResult>() {

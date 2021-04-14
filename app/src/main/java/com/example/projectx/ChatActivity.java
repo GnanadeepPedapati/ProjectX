@@ -28,7 +28,15 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.projectx.model.MessageModel;
+import com.example.projectx.model.ResponseOverview;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -54,8 +62,12 @@ import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -77,11 +89,13 @@ public class ChatActivity extends AppCompatActivity {
     DatabaseReference mDatabase;
     FirebaseFirestore firestoreDb = FirebaseFirestore.getInstance();
     FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
     String updateHasReplied;
     String otherUser;
     StorageReference storageReference;
     private Uri filePath;
 
+    private boolean isOtherUserActive = false;
     private static final int STORAGE_PERMISSION_CODE = 123;
 
 
@@ -127,9 +141,6 @@ public class ChatActivity extends AppCompatActivity {
         addPostEventListener(mDatabase);
 
 
-
-
-
 //        FirebaseAuth.getInstance()
 //                .getCurrentUser()
 //                .getDisplayName()
@@ -156,8 +167,11 @@ public class ChatActivity extends AppCompatActivity {
         });
 
 
+        attachOtherUserActiveListener();
+
 //        displayMessages(mDatabase);
     }
+
 
     private void updateUserRequestTable() {
 
@@ -211,6 +225,21 @@ public class ChatActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
 
+    }
+
+
+    private void attachOtherUserActiveListener() {
+        mDatabase.child(chatId).child("active_" + otherUser).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                isOtherUserActive = snapshot.getValue() != null && (boolean) snapshot.getValue();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
 
@@ -306,10 +335,75 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
+
+    private void sendFCMNotification(String destinationUserId) {
+
+
+        db.collection("UserDetails").document(destinationUserId).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                Map<String, Object> data = documentSnapshot.getData();
+
+                String token = (String) data.get("token");
+                if (token != null)
+                    volleyPost(token);
+            }
+        });
+
+    }
+
+    public void volleyPost(String token) {
+        String postUrl = "https://fcm.googleapis.com/fcm/send";
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+
+        JSONObject postData = new JSONObject();
+        try {
+
+
+            JSONObject notification = new JSONObject();
+            notification.put("message", "You have a new Messagess. Sent ");
+            notification.put("title", "Firebase");
+            postData.put("to", token);
+            postData.put("data", notification);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, postUrl, postData, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                System.out.println(response);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+            }
+        }) {
+
+            String accessToken = "AAAANNcpuuQ:APA91bF74EKKyL0pBTy-vrpsQ8_nHth-cLHHwqV7rjelEN9Sr8amusOVsLjVBenuWismyB5gEeCMA5T6hNUqvAQ5Fk7jFZ7YPVDkklYsBIxnkIuPijzFCa0DUaFjAFWKONURVAdnU6m_";
+
+            //This is for Headers If You Needed
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("Content-Type", "application/json; charset=UTF-8");
+                params.put("Authorization", "key=" + accessToken);
+                return params;
+            }
+
+        };
+
+        requestQueue.add(jsonObjectRequest);
+
+    }
+
     @Override
     protected void onPause() {
         if (Objects.nonNull(childEventListener))
             mDatabase.child(chatId).child("messages").removeEventListener(childEventListener);
+        mDatabase.child(ChatActivity.this.chatId).child("active_" + loggedInUser).setValue(false);
         super.onPause();
     }
 
@@ -318,8 +412,10 @@ public class ChatActivity extends AppCompatActivity {
     protected void onResume() {
         if (Objects.nonNull(childEventListener))
             mDatabase.child(chatId).child("messages").addChildEventListener(childEventListener);
+        mDatabase.child(ChatActivity.this.chatId).child("active_" + loggedInUser).setValue(true);
         super.onResume();
     }
+
 
     private void attachFile() {
         Intent intent = new Intent();
@@ -431,10 +527,10 @@ public class ChatActivity extends AppCompatActivity {
         String dateAndTime = formatter.format(date);
         MessageModel messageModel = new MessageModel(message, loggedInUser, false, dateAndTime);
 
-
         mDatabase.child(ChatActivity.this.chatId).child("messages").push().setValue(messageModel);
         mDatabase.child(ChatActivity.this.chatId).child("lastMessage").setValue(messageModel);
-
+        if (!isOtherUserActive)
+            sendFCMNotification(otherUser);
         insertNotificationRequest(otherUser);
         if ("true".equals(updateHasReplied)) {
             updateUserRequestTable();

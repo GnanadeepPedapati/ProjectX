@@ -52,6 +52,7 @@ public class BusinessActivity extends AppCompatActivity {
 
         skipNow = findViewById(R.id.skip_now);
 
+        continueBtn.setEnabled(false);
         continueBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -125,6 +126,7 @@ public class BusinessActivity extends AppCompatActivity {
     public void onRadioButtonClicked(View view) {
         // Is the button now checked?
         boolean checked = ((RadioButton) view).isChecked();
+        continueBtn.setEnabled(true);
 
         // Check which radio button was clicked
         switch (view.getId()) {

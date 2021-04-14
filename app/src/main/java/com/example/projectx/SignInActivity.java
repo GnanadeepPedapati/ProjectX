@@ -35,9 +35,12 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static android.content.ContentValues.TAG;
 
@@ -47,7 +50,8 @@ public class SignInActivity extends Activity implements View.OnClickListener {
     EditText emailInput;
     EditText passwordInput;
     private FirebaseAuth auth;
-//    CallbackManager mCallbackManager;
+    //    CallbackManager mCallbackManager;
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
 
 
     @Override
@@ -124,18 +128,18 @@ public class SignInActivity extends Activity implements View.OnClickListener {
 
     public void createSignInIntentFB() {
         // [START auth_fui_create_intent]
-        // Choose authentication providers
-        List<AuthUI.IdpConfig> providers = Arrays.asList(
-                new AuthUI.IdpConfig.FacebookBuilder().build()
-        );
-
-        // Create and launch sign-in intent
-        startActivityForResult(
-                AuthUI.getInstance()
-                        .createSignInIntentBuilder()
-                        .setAvailableProviders(providers)
-                        .build(),
-                RC_SIGN_IN);
+//        // Choose authentication providers
+//        List<AuthUI.IdpConfig> providers = Arrays.asList(
+//                new AuthUI.IdpConfig.FacebookBuilder().build()
+//        );
+//
+//        // Create and launch sign-in intent
+//        startActivityForResult(
+//                AuthUI.getInstance()
+//                        .createSignInIntentBuilder()
+//                        .setAvailableProviders(providers)
+//                        .build(),
+//                RC_SIGN_IN);
         // [END auth_fui_create_intent]
     }
 
@@ -155,7 +159,6 @@ public class SignInActivity extends Activity implements View.OnClickListener {
                 insertToFirebase(user);
                 Log.d("Result", "onActivityResult: Success");
                 Toast.makeText(this, "LoggedIn", Toast.LENGTH_LONG).show();
-                postLogin();
 
                 // ...
             } else {
@@ -178,13 +181,28 @@ public class SignInActivity extends Activity implements View.OnClickListener {
         userDetails.setEmail(email);
         userDetails.setUid(uid);
         userDetails.setDisplayName(displayName);
-        saveToFireStore(userDetails);
+        DocumentReference documentReference = db.collection("UserDetails")
+                .document(userDetails.getUid());
+        documentReference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot result = task.getResult();
+                    if (!result.exists()) { // User Doesnt exists - first time logged in
+                        saveToFireStore(userDetails);
+
+                    } else
+                        postLogin();
+
+                }
+            }
+        });
+
 
     }
 
 
     public void saveToFireStore(UserDetails userDetails) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         db.collection("UserDetails")
                 .document(userDetails.getUid())
@@ -193,6 +211,8 @@ public class SignInActivity extends Activity implements View.OnClickListener {
                     @Override
                     public void onSuccess(Void aVoid) {
                         Log.d("Insert", "DocumentSnapshot successfully written!");
+                        postLogin();
+
 
                     }
                 })
@@ -242,6 +262,9 @@ public class SignInActivity extends Activity implements View.OnClickListener {
 
 
     private void postLogin() {
+
+
+        updateToken(UserDetailsUtil.getUID());
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         DocumentReference docRef = db.collection("UserDetails").document(UserDetailsUtil.getUID());
@@ -270,6 +293,49 @@ public class SignInActivity extends Activity implements View.OnClickListener {
                 }
             }
         });
+
+
+    }
+
+    private void updateToken(String uid) {
+
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(new OnCompleteListener<String>() {
+                    @Override
+                    public void onComplete(@NonNull Task<String> task) {
+                        if (!task.isSuccessful()) {
+                            Log.w(TAG, "Fetching FCM registration token failed", task.getException());
+                            return;
+                        }
+
+                        // Get new FCM registration token
+                        String token = task.getResult();
+                        if (uid != null) {
+                            FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+                            Map<String, Object> userDetails = new HashMap<>();
+                            userDetails.put("token", token);
+                            db.collection("UserDetails")
+                                    .document(UserDetailsUtil.getUID())
+                                    .set(userDetails, SetOptions.merge())
+                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            Log.d("Insert", "DocumentSnapshot successfully written!");
+
+                                        }
+                                    })
+                                    .addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            Log.w(TAG, "Error writing document", e);
+                                        }
+                                    });
+
+                        }
+
+                    }
+                });
 
 
     }
