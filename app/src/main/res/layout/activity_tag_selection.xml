@@ -24,6 +24,18 @@
             android:gravity="center">
 
         </TextView>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Please choose the tags you relate to, so that we can better direct requests to you"
+            android:id="@+id/tag_act_heading_small"
+            android:textColor="@color/white"
+            android:layout_marginTop="5dp"
+            android:textSize="8dp"
+            android:textStyle="bold"
+            android:gravity="center">
+
+        </TextView>
 
 
 

@@ -98,6 +98,11 @@ public class ChatActivity extends AppCompatActivity {
         chatId = getIntent().getStringExtra("chatId");
         updateHasReplied = getIntent().getStringExtra("updateHasReplied");
         String chatHead = getIntent().getStringExtra("entityName");
+        boolean isBusiness = getIntent().getBooleanExtra("isBusiness",false);
+        if(isBusiness == true){
+            chatHead = chatHead + " (Verified Business)";
+        }
+
         ((AppCompatActivity) this).getSupportActionBar().setTitle(chatHead);
 
 

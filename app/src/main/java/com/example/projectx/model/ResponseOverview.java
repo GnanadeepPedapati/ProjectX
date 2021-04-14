@@ -16,6 +16,7 @@ public class ResponseOverview {
     private String lastMessage;
     private String otherUser;
     private boolean hasReplied;
+    private boolean isBusiness;
 
 
 }

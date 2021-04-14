@@ -70,6 +70,8 @@ public class ResponseListAdapter extends BaseAdapter {
                 convertView.findViewById(R.id.messagesCount);
         TextView lastReceivedTime = (TextView)
                 convertView.findViewById(R.id.lastReceivedTime);
+        TextView isBusiness = (TextView)
+                convertView.findViewById(R.id.isBusiness);
 
         Button icon = (Button) convertView.findViewById(R.id.round_icon);
         Random rnd = new Random();
@@ -81,8 +83,18 @@ public class ResponseListAdapter extends BaseAdapter {
         if (responseOverview.getEntityName() != null && responseOverview.getEntityName().length() != 0) {
             icon.setVisibility(View.VISIBLE);
             icon.setText(responseOverview.getEntityName().substring(0, 1).toUpperCase());
-        } else
+            if(responseOverview.isBusiness()){
+                isBusiness.setVisibility(View.VISIBLE);
+            }
+            else{
+                isBusiness.setVisibility(View.INVISIBLE);
+            }
+
+        } else{
             icon.setVisibility(View.INVISIBLE);
+            isBusiness.setVisibility(View.INVISIBLE);
+        }
+
 
 
         //sets the text for item name and item description from the current item object

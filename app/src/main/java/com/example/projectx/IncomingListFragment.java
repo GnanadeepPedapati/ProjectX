@@ -132,6 +132,7 @@ public class IncomingListFragment extends Fragment {
                 intent.putExtra("otherUser", responseOverview.getOtherUser());
                 intent.putExtra("updateHasReplied", String.valueOf(responseOverview.isHasReplied()));
                 intent.putExtra("entityName", responseOverview.getEntityName());
+                intent.putExtra("isBusiness",responseOverview.isBusiness());
 
                 startActivity(intent);
             }
@@ -266,8 +267,13 @@ public class IncomingListFragment extends Fragment {
                         UserDetails userDetails = document.toObject(UserDetails.class);
                         if (userDetails.getIsBusiness() == null || userDetails.getIsBusiness() == Boolean.FALSE) {
                             responseOverview.setEntityName(userDetails.getDisplayName());
-                        } else
+                            responseOverview.setBusiness(false);
+                        } else {
                             responseOverview.setEntityName((String) document.get("businessName"));
+                            responseOverview.setBusiness(true);
+
+                        }
+
                         String loggedInUser = UserDetailsUtil.getUID();
                         String chatId = UserDetailsUtil.generateChatId(loggedInUser, uid);
                         responseListAdapter.notifyDataSetChanged();
