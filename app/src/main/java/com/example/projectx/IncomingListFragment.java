@@ -2,19 +2,20 @@ package com.example.projectx;
 
 import android.content.Intent;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+import com.example.projectx.adapter.ResponseListAdapter;
 import com.example.projectx.model.MessageModel;
 import com.example.projectx.model.ResponseOverview;
 import com.example.projectx.model.UserDetails;
@@ -53,15 +54,12 @@ public class IncomingListFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
     ResponseListAdapter responseListAdapter;
-    private SwipeRefreshLayout pullToRefresh;
     DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference().child("Chats");
-
-
+    TextView noRequestsTextView;
     int callsInitiated = 0;
     boolean loading;
-
     ArrayList<ResponseOverview> responseOverviews = new ArrayList<>();
-
+    private SwipeRefreshLayout pullToRefresh;
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
@@ -108,9 +106,9 @@ public class IncomingListFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
 
-        ListView responsesList = (ListView) getView().findViewById(R.id.incoming_list);
+        ListView responsesList = getView().findViewById(R.id.incoming_list);
         pullToRefresh = getView().findViewById(R.id.pullToRefresh);
-
+        noRequestsTextView = getView().findViewById(R.id.noRequestsText);
         pullToRefresh.setColorSchemeResources(android.R.color.holo_blue_bright,
                 android.R.color.holo_green_light,
                 android.R.color.holo_orange_light,
@@ -132,7 +130,7 @@ public class IncomingListFragment extends Fragment {
                 intent.putExtra("otherUser", responseOverview.getOtherUser());
                 intent.putExtra("updateHasReplied", String.valueOf(responseOverview.isHasReplied()));
                 intent.putExtra("entityName", responseOverview.getEntityName());
-                intent.putExtra("isBusiness",responseOverview.isBusiness());
+                intent.putExtra("isBusiness", responseOverview.isBusiness());
 
                 startActivity(intent);
             }
@@ -156,7 +154,10 @@ public class IncomingListFragment extends Fragment {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
-                            for (UserRequests userRequest : task.getResult().toObjects(UserRequests.class)) {
+                            List<UserRequests> userRequests = task.getResult().toObjects(UserRequests.class);
+                            if (userRequests.isEmpty())
+                                noRequestsTextView.setVisibility(View.VISIBLE);
+                            for (UserRequests userRequest : userRequests) {
                                 if (!senderSet.contains(userRequest.getSender())) {
                                     ResponseOverview responseOverview = new ResponseOverview();
                                     senderSet.add(userRequest.getSender());
@@ -164,7 +165,6 @@ public class IncomingListFragment extends Fragment {
                                     responseOverview.setOtherUser(userRequest.getSender());
                                     responseOverviews.add(responseOverview);
 
-                                    List<UserRequests> userRequests = task.getResult().toObjects(UserRequests.class);
 
                                     List<UserRequests> filterSameSenderReq = filterSameSenders(userRequests, userRequest.getSender());
                                     for (UserRequests usr : filterSameSenderReq) {

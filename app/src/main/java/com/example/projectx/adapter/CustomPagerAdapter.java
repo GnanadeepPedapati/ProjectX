@@ -1,4 +1,4 @@
-package com.example.projectx;
+package com.example.projectx.adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -8,6 +8,8 @@ import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.viewpager.widget.PagerAdapter;
+
+import com.example.projectx.R;
 
 import java.util.ArrayList;
 
@@ -33,9 +35,9 @@ public class CustomPagerAdapter extends PagerAdapter {
 
 
     @Override
-    public  Object instantiateItem(ViewGroup container, int position) {
+    public Object instantiateItem(ViewGroup container, int position) {
         View view = LayoutInflater.from(context).inflate(R.layout.pager_item, container, false);
-        ImageView imageView = (ImageView) view.findViewById(R.id.image);
+        ImageView imageView = view.findViewById(R.id.image);
         imageView.setBackgroundResource(pager.get(position));
         container.addView(view);
 

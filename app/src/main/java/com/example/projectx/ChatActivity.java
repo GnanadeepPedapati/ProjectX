@@ -6,25 +6,21 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -35,8 +31,8 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.projectx.adapter.ChatListAdapter;
 import com.example.projectx.model.MessageModel;
-import com.example.projectx.model.ResponseOverview;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -67,7 +63,6 @@ import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -77,15 +72,15 @@ import java.util.UUID;
 
 import static android.content.ContentValues.TAG;
 
-public class ChatActivity extends AppCompatActivity {
+public class ChatActivity extends Activity {
 
+    private static final int STORAGE_PERMISSION_CODE = 123;
     RecyclerView recyclerView;
     ProgressBar progressBar;
     ArrayList<MessageModel> messagesList = new ArrayList<>();
     ChatListAdapter adapter;
     ChildEventListener childEventListener;
     String loggedInUser;
-    private String chatId;
     DatabaseReference mDatabase;
     FirebaseFirestore firestoreDb = FirebaseFirestore.getInstance();
     FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
@@ -93,13 +88,10 @@ public class ChatActivity extends AppCompatActivity {
     String updateHasReplied;
     String otherUser;
     StorageReference storageReference;
+    private String chatId;
     private Uri filePath;
-
     private boolean isOtherUserActive = false;
-    private static final int STORAGE_PERMISSION_CODE = 123;
-
-
-    private int PICK_IMAGE_REQUEST = 1;
+    private final int PICK_IMAGE_REQUEST = 1;
 
 
     @Override
@@ -112,16 +104,11 @@ public class ChatActivity extends AppCompatActivity {
         chatId = getIntent().getStringExtra("chatId");
         updateHasReplied = getIntent().getStringExtra("updateHasReplied");
         String chatHead = getIntent().getStringExtra("entityName");
-        boolean isBusiness = getIntent().getBooleanExtra("isBusiness",false);
-        if(isBusiness == true){
-            chatHead = chatHead + " (Verified Business)";
-        }
-
-        ((AppCompatActivity) this).getSupportActionBar().setTitle(chatHead);
+        boolean isBusiness = getIntent().getBooleanExtra("isBusiness", false);
 
 
         setContentView(R.layout.activity_chat);
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab = findViewById(R.id.fab);
         progressBar = findViewById(R.id.progress_bar);
         FirebaseUser currentUser = firebaseAuth.getCurrentUser();
         if (currentUser == null) {
@@ -129,8 +116,24 @@ public class ChatActivity extends AppCompatActivity {
             return;
         }
 
+
         loggedInUser = currentUser.getUid();
         otherUser = getIntent().getStringExtra("otherUser");
+
+
+        if (chatHead != null) {
+            TextView profileTitleLetter = findViewById(R.id.profileTitleLetter);
+            profileTitleLetter.setText(chatHead.substring(0, 1).toUpperCase());
+            TextView chatName = findViewById(R.id.chatName);
+            chatName.setText(chatHead);
+            if (isBusiness) {
+                TextView isBusinessText = findViewById(R.id.isBusinessText);
+                isBusinessText.setVisibility(View.VISIBLE);
+
+            }
+        }
+
+
         chatId = UserDetailsUtil.generateChatId(loggedInUser, otherUser);
 
         adapter = new ChatListAdapter(this, messagesList, loggedInUser);
@@ -147,7 +150,7 @@ public class ChatActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                EditText edit = (EditText) findViewById(R.id.input);
+                EditText edit = findViewById(R.id.input);
                 if (!edit.getText().toString().trim().equals("")) {
                     sendMessage(edit.getText().toString().trim());
                 }
@@ -382,7 +385,7 @@ public class ChatActivity extends AppCompatActivity {
             }
         }) {
 
-            String accessToken = "AAAANNcpuuQ:APA91bF74EKKyL0pBTy-vrpsQ8_nHth-cLHHwqV7rjelEN9Sr8amusOVsLjVBenuWismyB5gEeCMA5T6hNUqvAQ5Fk7jFZ7YPVDkklYsBIxnkIuPijzFCa0DUaFjAFWKONURVAdnU6m_";
+            final String accessToken = "AAAANNcpuuQ:APA91bF74EKKyL0pBTy-vrpsQ8_nHth-cLHHwqV7rjelEN9Sr8amusOVsLjVBenuWismyB5gEeCMA5T6hNUqvAQ5Fk7jFZ7YPVDkklYsBIxnkIuPijzFCa0DUaFjAFWKONURVAdnU6m_";
 
             //This is for Headers If You Needed
             @Override

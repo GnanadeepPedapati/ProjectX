@@ -1,11 +1,6 @@
 package com.example.projectx.model;
 
 
-import com.google.firebase.Timestamp;
-
-import java.util.Date;
-
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -18,8 +13,8 @@ public class Requests {
     String CreatedBy;
     double latitute;
     double longitude;
-    private String CreatedAt;
     double distance;
     boolean tagsAssigned;
+    private String CreatedAt;
 
 }

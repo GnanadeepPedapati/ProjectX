@@ -1,58 +1,52 @@
 package com.example.projectx;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
-
 import android.content.Intent;
-import android.content.res.ColorStateList;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.text.Editable;
 import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.projectx.model.UserDetails;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.material.chip.Chip;
-import com.google.android.material.chip.ChipGroup;
-import com.google.android.material.textview.MaterialTextView;
+import com.google.common.collect.ImmutableMap;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.messaging.FirebaseMessaging;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static android.content.ContentValues.TAG;
 
 public class SignUpActivity extends AppCompatActivity {
-    private FirebaseAuth auth;
     EditText emailInput, passwordInput, confirmPasswordInput, nameInput;
+    private FirebaseAuth auth;
 
+    public static boolean isEmailValid(String email) {
+        String expression = "^[\\w\\.-]+@([\\w\\-]+\\.)+[A-Z]{2,4}$";
+        Pattern pattern = Pattern.compile(expression, Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(email);
+        return matcher.matches();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +69,6 @@ public class SignUpActivity extends AppCompatActivity {
 
     }
 
-
     private void insertToFirebase(FirebaseUser user, String name) {
 
         String email = user.getEmail();
@@ -90,7 +83,6 @@ public class SignUpActivity extends AppCompatActivity {
 
     }
 
-
     public void saveToFireStore(UserDetails userDetails) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -102,6 +94,7 @@ public class SignUpActivity extends AppCompatActivity {
                     public void onSuccess(Void aVoid) {
                         Log.d("Insert", "DocumentSnapshot successfully written!");
                         updateToken(userDetails.getUid());
+                        insertUidToCollection(userDetails.getUid());
 
                     }
                 })
@@ -111,10 +104,34 @@ public class SignUpActivity extends AppCompatActivity {
                         Log.w(TAG, "Error writing document", e);
                     }
                 });
-        ;
 
     }
 
+    private void insertUidToCollection(String uid) {
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference tagRef = db.collection("CollectionData").document("AllUsers");
+
+        tagRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        Log.d(TAG, "DocumentSnapshot data: " + document.getData());
+                        tagRef.update("Users", FieldValue.arrayUnion(uid));
+
+                    } else {
+                        tagRef.set(ImmutableMap.of("Users", Collections.singletonList(uid)));
+                    }
+                } else {
+                    Log.d(TAG, "get failed with ", task.getException());
+                }
+            }
+        });
+
+
+    }
 
     private void updateToken(String uid) {
 
@@ -201,7 +218,6 @@ public class SignUpActivity extends AppCompatActivity {
         finish();
     }
 
-
     private void updateUserWithDisplayName(FirebaseUser user, String name) {
         UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
                 .setDisplayName(name)
@@ -220,14 +236,6 @@ public class SignUpActivity extends AppCompatActivity {
 
     private void displayToast(String message) {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-    }
-
-
-    public static boolean isEmailValid(String email) {
-        String expression = "^[\\w\\.-]+@([\\w\\-]+\\.)+[A-Z]{2,4}$";
-        Pattern pattern = Pattern.compile(expression, Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(email);
-        return matcher.matches();
     }
 
 }

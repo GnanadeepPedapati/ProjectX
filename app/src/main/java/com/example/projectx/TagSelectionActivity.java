@@ -33,12 +33,11 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
@@ -51,7 +50,7 @@ public class TagSelectionActivity extends AppCompatActivity {
     TextView skipNow;
     private ProgressBar spinner;
     private List<String> selectedTags = new ArrayList<>();
-    private List<String> sourceTags = new ArrayList<>();
+    private final List<String> sourceTags = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +59,7 @@ public class TagSelectionActivity extends AppCompatActivity {
         getSourceTags();
         tagsFilter = findViewById(R.id.filterTags);
         Button tagSelectionContinue = findViewById(R.id.tagSelectionContinue);
-        spinner = (ProgressBar) findViewById(R.id.progressBar1);
+        spinner = findViewById(R.id.progressBar1);
 
         onCoachMark();
 
@@ -111,28 +110,28 @@ public class TagSelectionActivity extends AppCompatActivity {
 
     }
 
+
     private void getSourceTags() {
-        db.collection("Tags")
+
+        db.collection("CollectionData").document("AllTags")
                 .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                         if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                Log.d(TAG, document.getId() + " => " + document.getData());
-                                sourceTags.add(document.getId());
-//                                addTagToSourceGroup(document.getId());
-                            }
+                            DocumentSnapshot result = task.getResult();
+                            Map<String, Object> data = result.getData();
+                            List<String> tags = (List<String>) data.get("Tags");
+                            addTagsToSourceTagsListAndGroup(tags);
                             loadUserExistingTags();
-                        } else {
-                            Log.d(TAG, "Error getting documents: ", task.getException());
+
                         }
                     }
                 });
     }
 
 
-    public void onCoachMark(){
+    public void onCoachMark() {
 
         final Dialog dialog = new Dialog(this);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -170,6 +169,13 @@ public class TagSelectionActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    private void addTagsToSourceTagsListAndGroup(List<String> tags) {
+        for (String tagName : tags) {
+            sourceTags.add(tagName);
+            addTagToSourceGroup(tagName);
+        }
     }
 
 

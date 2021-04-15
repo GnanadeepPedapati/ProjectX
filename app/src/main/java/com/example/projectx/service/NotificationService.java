@@ -1,16 +1,12 @@
-package com.example.projectx;
+package com.example.projectx.service;
 
 import android.app.ActivityManager;
-import android.app.AlarmManager;
 import android.app.Notification;
-import android.app.NotificationChannel;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
-import android.os.SystemClock;
-import android.service.notification.StatusBarNotification;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -19,6 +15,10 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.TaskStackBuilder;
 
+import com.example.projectx.MainActivity;
+import com.example.projectx.R;
+import com.example.projectx.Restarter;
+import com.example.projectx.UserDetailsUtil;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -26,7 +26,6 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.SetOptions;
 
 import java.util.HashMap;
 import java.util.List;
@@ -38,27 +37,37 @@ import static android.content.ContentValues.TAG;
 
 public class NotificationService extends Service {
 
+    int MINUTES = 1; // The delay in minutes
     private String previousMessageNotification;
     private String previousRequestNotification;
+    private Timer timer;
+    private TimerTask timerTask;
 
 
     public NotificationService() {
 
     }
 
+    public static boolean isAppRunning(final Context context, final String packageName) {
+        final ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        final List<ActivityManager.RunningAppProcessInfo> procInfos = activityManager.getRunningAppProcesses();
+        if (procInfos != null) {
+            for (final ActivityManager.RunningAppProcessInfo processInfo : procInfos) {
 
-    int MINUTES = 1; // The delay in minutes
 
+                if (processInfo.processName.equals(packageName) && processInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     @Override
     public IBinder onBind(Intent intent) {
         // TODO: Return the communication channel to the service.
         return null;
     }
-
-
-    private Timer timer;
-    private TimerTask timerTask;
 
     public void startTimer() {
         timer = new Timer();
@@ -77,16 +86,12 @@ public class NotificationService extends Service {
         }
     }
 
-
-
-
     @Override
     public void onCreate() {
         startTimer();
         Toast.makeText(this, "Service Created", Toast.LENGTH_LONG).show();
 
     }
-
 
     @Override
     public void onTaskRemoved(Intent rootIntent) {
@@ -95,9 +100,6 @@ public class NotificationService extends Service {
         broadcastIntent.setClass(this, Restarter.class);
         this.sendBroadcast(broadcastIntent);
     }
-
-
-
 
     private void createAndNotify() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -169,7 +171,6 @@ public class NotificationService extends Service {
         resetNotificationRequest(UserDetailsUtil.getUID());
     }
 
-
     private void resetNotificationRequest(String uid) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -219,24 +220,17 @@ public class NotificationService extends Service {
         }
 
         if (messageNotification != null) {
-            if (messageNotification.equals(previousMessageNotification) == false) {
-                return false;
-            }
+            return messageNotification.equals(previousMessageNotification) != false;
 //            else{
 //                messageEquals = true;
 //            }
         } else {
-            if (previousMessageNotification != null) {
-                return false;
-            }
+            return previousMessageNotification == null;
 //            else{
 //                messageEquals = true;
 //            }
         }
-
-        return true;
     }
-
 
     private android.app.Notification buildNotification(String requestNotification, String messageNotification) {
 
@@ -261,7 +255,6 @@ public class NotificationService extends Service {
 
     }
 
-
     private android.app.Notification buildRequesNotification(String requestNotification, String messageNotification) {
 
         // Create an Intent for the activity you want to start
@@ -283,7 +276,6 @@ public class NotificationService extends Service {
 
     }
 
-
     private NotificationCompat.Style buildInboxStyle(String requestNotification, String messageNotification) {
 
 
@@ -295,7 +287,6 @@ public class NotificationService extends Service {
         return inboxStyle;
     }
 
-
     @Override
     public int onStartCommand(final Intent intent,
                               final int flags,
@@ -304,8 +295,6 @@ public class NotificationService extends Service {
 
         //your code
     }
-
-
 
     @Override
     public void onDestroy() {
@@ -316,21 +305,5 @@ public class NotificationService extends Service {
         broadcastIntent.setAction("restartservice");
         broadcastIntent.setClass(this, Restarter.class);
         this.sendBroadcast(broadcastIntent);
-    }
-
-
-    public static boolean isAppRunning(final Context context, final String packageName) {
-        final ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        final List<ActivityManager.RunningAppProcessInfo> procInfos = activityManager.getRunningAppProcesses();
-        if (procInfos != null) {
-            for (final ActivityManager.RunningAppProcessInfo processInfo : procInfos) {
-
-
-                if (processInfo.processName.equals(packageName) && processInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 }

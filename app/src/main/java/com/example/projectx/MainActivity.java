@@ -2,13 +2,8 @@ package com.example.projectx;
 
 import android.app.Activity;
 import android.app.ActivityManager;
-import android.app.AlarmManager;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.job.JobInfo;
-import android.app.job.JobScheduler;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
@@ -18,19 +13,20 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
+import androidx.work.WorkRequest;
 
 import com.example.projectx.model.UserDetails;
+import com.example.projectx.service.LocationFetchService;
+import com.example.projectx.service.NotificationService;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.SetOptions;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static android.content.ContentValues.TAG;
 
@@ -43,32 +39,16 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-        String uid = UserDetailsUtil.getUID();
-//        if (uid != null)
-//            resetNotificationRequest(uid);
-        JobScheduler jobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
-
-        JobInfo jobInfo = new JobInfo.Builder(1234, new ComponentName(this, MyJobService.class))
-                .setPersisted(true)
-                .setRequiresDeviceIdle(false)
-                .setOverrideDeadline(5000)
+        WorkRequest saveRequest = new OneTimeWorkRequest.Builder(JobWorker.class)
+                .setInitialDelay(10, TimeUnit.SECONDS)
+                .addTag("TAG_OUTPUT")
                 .build();
-
-
-        // jobScheduler.schedule(jobInfo);
-
+        WorkManager
+                .getInstance(getApplicationContext())
+                .enqueue(saveRequest);
 
         createNotificationChannel();
 
-        boolean myServiceRunning = isMyServiceRunning(NotificationService.class);
-
-        if (!myServiceRunning) {
-            intent = new Intent(this, NotificationService.class);
-            startService(intent);
-        }
-
-        scheduleAlarm();
         new Handler().postDelayed(new Runnable() {
 
 
@@ -79,8 +59,6 @@ public class MainActivity extends Activity {
                 boolean userLoggedIn = UserDetailsUtil.isUserLoggedIn();
                 if (userLoggedIn) {
                     boolean myServiceRunning = isMyServiceRunning(NotificationService.class);
-
-
                     if (!myServiceRunning) {
                         Intent intent = new Intent(MainActivity.this, LocationFetchService.class);
                         startService(intent);
@@ -101,22 +79,6 @@ public class MainActivity extends Activity {
         }, 500);
     }
 
-
-    // Setup a recurring alarm every half hour
-    public void scheduleAlarm() {
-        // Construct an intent that will execute the AlarmReceiver
-        Intent intent = new Intent(getApplicationContext(), MyAlarmReceiver.class);
-        // Create a PendingIntent to be triggered when the alarm goes off
-        final PendingIntent pIntent = PendingIntent.getBroadcast(this, MyAlarmReceiver.REQUEST_CODE,
-                intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        // Setup periodic alarm every every half hour from this point onwards
-        long firstMillis = System.currentTimeMillis(); // alarm is set right away
-        AlarmManager alarm = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
-        // First parameter is the type: ELAPSED_REALTIME, ELAPSED_REALTIME_WAKEUP, RTC_WAKEUP
-        // Interval can be INTERVAL_FIFTEEN_MINUTES, INTERVAL_HALF_HOUR, INTERVAL_HOUR, INTERVAL_DAY
-        alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, firstMillis,
-                10000, pIntent);
-    }
 
     private void postLogin() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -158,34 +120,6 @@ public class MainActivity extends Activity {
         finish();
     }
 
-    private void resetNotificationRequest(String uid) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        Map<String, String> notificationMap = new HashMap<>();
-
-        notificationMap.put("requestNotification", null);
-        notificationMap.put("messageNotification", null);
-
-
-        db.collection("Notifications")
-                .document(uid)
-                .set(notificationMap)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Log.d("Insert", "DocumentSnapshot successfully written!");
-
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.w(TAG, "Error writing document", e);
-                    }
-                });
-
-
-    }
 
     private boolean isMyServiceRunning(Class<?> serviceClass) {
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
@@ -219,15 +153,4 @@ public class MainActivity extends Activity {
     }
 
 
-//    @Override
-//    protected void onDestroy() {
-////        stopService(intent);
-////        Intent broadcastIntent = new Intent();
-////        broadcastIntent.setAction("restartservice");
-////        broadcastIntent.setClass(this, Restarter.class);
-////        this.sendBroadcast(broadcastIntent);
-////        super.onDestroy();
-//   }
-
-    // [END auth_fui_result]
 }

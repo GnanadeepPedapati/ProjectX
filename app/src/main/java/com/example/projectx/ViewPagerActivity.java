@@ -1,12 +1,14 @@
 package com.example.projectx;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.viewpager.widget.ViewPager;
-
 import android.os.Bundle;
 import android.text.Html;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.viewpager.widget.ViewPager;
+
+import com.example.projectx.adapter.CustomPagerAdapter;
 
 import java.util.ArrayList;
 
@@ -19,12 +21,12 @@ public class ViewPagerActivity extends AppCompatActivity {
     TextView[] dot;
 
     @Override
-    protected void onCreate (Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_pager);
 
-        viewPager = (ViewPager) findViewById(R.id.viewpager);
-        layout_dot = (LinearLayout) findViewById(R.id.layout_dot);
+        viewPager = findViewById(R.id.viewpager);
+        layout_dot = findViewById(R.id.layout_dot);
         arrayList = new ArrayList<>();
 
         arrayList.add(R.color.teal_200);
@@ -43,10 +45,12 @@ public class ViewPagerActivity extends AppCompatActivity {
             public void onPageScrolled(int i, float v, int i1) {
 
             }
+
             @Override
             public void onPageSelected(int i) {
                 addDot(i);
             }
+
             @Override
             public void onPageScrollStateChanged(int i) {
 
@@ -54,11 +58,12 @@ public class ViewPagerActivity extends AppCompatActivity {
         });
 
     }
+
     public void addDot(int page_position) {
         dot = new TextView[arrayList.size()];
         layout_dot.removeAllViews();
 
-        for (int i = 0; i < dot.length; i++) {;
+        for (int i = 0; i < dot.length; i++) {
             dot[i] = new TextView(this);
             dot[i].setText(Html.fromHtml("&#9673;"));
             dot[i].setTextSize(35);

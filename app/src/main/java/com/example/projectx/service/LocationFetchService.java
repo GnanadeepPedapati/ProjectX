@@ -1,4 +1,4 @@
-package com.example.projectx;
+package com.example.projectx.service;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -8,16 +8,17 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 
+import com.example.projectx.UserDetailsUtil;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -33,11 +34,26 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class LocationFetchService extends Service {
+    FusedLocationProviderClient mFusedLocationClient;
+    int MINUTES = 1; // The delay in minutes
+    private Context mContext;
+    private Timer timer;
+    private TimerTask timerTask;
+    private final LocationCallback mLocationCallback = new LocationCallback() {
+
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+            Location mLastLocation = locationResult.getLastLocation();
+
+            updateLastSeenLocationToUser(mLastLocation);
+            //latitudeTextView.setText("Latitude: " + mLastLocation.getLatitude() + "");
+            //longitTextView.setText("Longitude: " + mLastLocation.getLongitude() + "");
+        }
+    };
+
+
     public LocationFetchService() {
     }
-
-    private Context mContext;
-
 
     //Use this method to show toast
     void showToast(String message) {
@@ -59,14 +75,6 @@ public class LocationFetchService extends Service {
         return null;
     }
 
-    FusedLocationProviderClient mFusedLocationClient;
-
-    int MINUTES = 1; // The delay in minutes
-
-
-    private Timer timer;
-    private TimerTask timerTask;
-
     public void startTimer() {
         timer = new Timer();
         timerTask = new TimerTask() {
@@ -83,7 +91,6 @@ public class LocationFetchService extends Service {
             timer = null;
         }
     }
-
 
     @Override
     public void onCreate() {
@@ -105,14 +112,20 @@ public class LocationFetchService extends Service {
 
     private boolean checkPermissions() {
 
-        return ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
-
+        boolean b = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
         // If we want background location
         // on Android 10.0 and higher,
         // use:
-        // ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED
-    }
+        //
 
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            boolean b1 = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED;
+            return b & b1;
+
+        }
+        return b;
+
+    }
 
     // method to check
     // if location is enabled
@@ -120,7 +133,6 @@ public class LocationFetchService extends Service {
         LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
     }
-
 
     @SuppressLint("MissingPermission")
     private void updateLocationToUser() {
@@ -153,7 +165,6 @@ public class LocationFetchService extends Service {
 
     }
 
-
     @SuppressLint("MissingPermission")
     private void requestNewLocationData() {
 
@@ -168,19 +179,6 @@ public class LocationFetchService extends Service {
         // on FusedLocationClient
         mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
     }
-
-
-    private LocationCallback mLocationCallback = new LocationCallback() {
-
-        @Override
-        public void onLocationResult(LocationResult locationResult) {
-            Location mLastLocation = locationResult.getLastLocation();
-
-            updateLastSeenLocationToUser(mLastLocation);
-            //latitudeTextView.setText("Latitude: " + mLastLocation.getLatitude() + "");
-            //longitTextView.setText("Longitude: " + mLastLocation.getLongitude() + "");
-        }
-    };
 
     private void updateLastSeenLocationToUser(Location mLastLocation) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();

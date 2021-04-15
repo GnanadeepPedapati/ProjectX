@@ -1,9 +1,5 @@
 package com.example.projectx;
 
-import androidx.annotation.NonNull;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import lombok.SneakyThrows;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,7 +10,11 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
 import com.bumptech.glide.Glide;
+import com.example.projectx.adapter.ResponseListAdapter;
 import com.example.projectx.model.MessageModel;
 import com.example.projectx.model.ResponseOverview;
 import com.example.projectx.model.UserDetails;
@@ -41,17 +41,18 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Objects;
 
-public class ResponsesListActivity extends Activity {
+import lombok.SneakyThrows;
 
-    private boolean isExpanded;
+public class ResponsesListActivity extends Activity {
 
     ArrayList<ResponseOverview> responseOverviews = new ArrayList<>();
     ResponseListAdapter responseListAdapter;
     DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference().child("Chats");
     int callsInitiated = 0;
-    private SwipeRefreshLayout pullToRefresh;
     FirebaseStorage storage = FirebaseStorage.getInstance();
     StorageReference storageReference = storage.getReference();
+    private boolean isExpanded;
+    private SwipeRefreshLayout pullToRefresh;
 
     @SneakyThrows
     @Override
@@ -62,18 +63,17 @@ public class ResponsesListActivity extends Activity {
         String createdDate = getIntent().getStringExtra("createdDate");
         final String imageUrl = getIntent().getStringExtra("imageUrl");
         TextView createdDateText = findViewById(R.id.request_create_time);
-        if(createdDate != null) {
+        if (createdDate != null) {
             SimpleDateFormat sfd = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss a");
             Date date = sfd.parse(createdDate);
             SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMdd");
-            if(sdf1.format(date).compareTo(sdf1.format(new Date())) <0){
+            if (sdf1.format(date).compareTo(sdf1.format(new Date())) < 0) {
                 sfd = new SimpleDateFormat("dd/MM/yyyy HH:mm a");
-            }
-            else{
+            } else {
                 sfd = new SimpleDateFormat("HH:mm a");
             }
 
-            String text =  sfd.format(date);
+            String text = sfd.format(date);
 //                String date = sfd.format(new Date(messageModel.getMessageTime()).getTime());
 //                dateTV.setText(text);
             createdDateText.setText(text);
@@ -84,7 +84,7 @@ public class ResponsesListActivity extends Activity {
         View expandButton = findViewById(R.id.request_heading);
         ImageView expandedImageView = findViewById(R.id.expanded_image_view);
 
-        ImageView imageView = (ImageView) findViewById(R.id.bitmap_image);
+        ImageView imageView = findViewById(R.id.bitmap_image);
         if (Objects.nonNull(imageUrl) && imageUrl != "") {
             StorageReference imageStorage = storageReference.child(imageUrl);
             imageView.setVisibility(View.VISIBLE);
@@ -109,7 +109,7 @@ public class ResponsesListActivity extends Activity {
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(isExpanded == false){
+                if (isExpanded == false) {
                     if (Objects.nonNull(imageUrl) && imageUrl != "") {
 
                         StorageReference imageStorage = storageReference.child(imageUrl);
@@ -123,8 +123,7 @@ public class ResponsesListActivity extends Activity {
                                 .into(expandedImageView);
                         isExpanded = true;
                     }
-                }
-                else{
+                } else {
                     imageView.setVisibility(View.VISIBLE);
                     expandedImageView.setVisibility(View.GONE);
                     Glide.with(getApplicationContext()).clear(expandedImageView);
@@ -152,7 +151,7 @@ public class ResponsesListActivity extends Activity {
 
         TextView requestHeading = findViewById(R.id.request_text_heading);
         requestHeading.setText(requestText);
-        ListView responsesList = (ListView) findViewById(R.id.incoming_list);
+        ListView responsesList = findViewById(R.id.incoming_list);
         getData(requestId); // your code
 
         pullToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -195,10 +194,7 @@ public class ResponsesListActivity extends Activity {
                                 responseOverview.setOtherUser(userRequest.getReceiver());
                                 responseOverviews.add(responseOverview);
                                 responseListAdapter.notifyDataSetChanged();
-
                                 getDisplayName(responseOverview, userRequest.getReceiver());
-
-
                             }
 
 

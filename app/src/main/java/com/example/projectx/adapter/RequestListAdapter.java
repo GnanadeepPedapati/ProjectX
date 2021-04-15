@@ -1,4 +1,4 @@
-package com.example.projectx;
+package com.example.projectx.adapter;
 
 import android.content.Context;
 import android.content.Intent;
@@ -12,6 +12,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.example.projectx.R;
+import com.example.projectx.ResponsesListActivity;
 import com.example.projectx.model.businessmodels.RequestListModel;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -25,13 +27,12 @@ import lombok.SneakyThrows;
 
 public class RequestListAdapter extends BaseAdapter {
 
-    private Context context;
-    private List<RequestListModel> listItems;
+    private StorageReference storageReference;
+    private final Context context;
+    private final List<RequestListModel> listItems;
     private boolean isExpanded;
-    StorageReference storageReference;
 
-    RequestListAdapter(Context context, List<RequestListModel> listItems) {
-
+    public RequestListAdapter(Context context, List<RequestListModel> listItems) {
         this.context = context;
         this.listItems = listItems;
         FirebaseStorage storage = FirebaseStorage.getInstance();
@@ -66,12 +67,9 @@ public class RequestListAdapter extends BaseAdapter {
         RequestListModel requestListModel = listItems.get(position);
 
         // get the TextView for item name and item description
-        TextView requestText = (TextView)
-                convertView.findViewById(R.id.request_text);
-        TextView createDate = (TextView)
-                convertView.findViewById(R.id.request_create_time);
-        Button responsesCount = (Button)
-                convertView.findViewById(R.id.responses_count);
+        TextView requestText = convertView.findViewById(R.id.request_text);
+        TextView createDate = convertView.findViewById(R.id.request_create_time);
+        Button responsesCount = convertView.findViewById(R.id.responses_count);
         responsesCount.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -88,7 +86,7 @@ public class RequestListAdapter extends BaseAdapter {
         View expandButton = convertView.findViewById(R.id.request_heading);
         ImageView expandedImageView = convertView.findViewById(R.id.expanded_image_view);
 
-        ImageView imageView = (ImageView) convertView.findViewById(R.id.bitmap_image);
+        ImageView imageView = convertView.findViewById(R.id.bitmap_image);
         if (Objects.nonNull(requestListModel.getImageUrl()) && requestListModel.getImageUrl() != "") {
             StorageReference imageStorage = storageReference.child(requestListModel.getImageUrl());
             imageView.setVisibility(View.VISIBLE);
@@ -112,7 +110,7 @@ public class RequestListAdapter extends BaseAdapter {
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(isExpanded == false){
+                if (isExpanded == false) {
                     if (Objects.nonNull(requestListModel.getImageUrl()) && requestListModel.getImageUrl() != "") {
 
                         StorageReference imageStorage = storageReference.child(requestListModel.getImageUrl());
@@ -126,8 +124,7 @@ public class RequestListAdapter extends BaseAdapter {
                                 .into(expandedImageView);
                         isExpanded = true;
                     }
-                }
-                else{
+                } else {
                     imageView.setVisibility(View.VISIBLE);
                     expandedImageView.setVisibility(View.GONE);
                     Glide.with(context).clear(expandedImageView);
@@ -145,13 +142,11 @@ public class RequestListAdapter extends BaseAdapter {
         });
 
 
-        if(requestListModel.getResponsesCount() == 0){
+        if (requestListModel.getResponsesCount() == 0) {
             responsesCount.setText("No Responses Yet");
-            responsesCount.setEnabled(true);
-        }
-        else
-        {
-            responsesCount.setText("View all " +String.valueOf(requestListModel.getResponsesCount()) + " Responses");
+            responsesCount.setEnabled(false);
+        } else {
+            responsesCount.setText("View all " + requestListModel.getResponsesCount() + " Responses");
             responsesCount.setEnabled(true);
 
         }
@@ -172,8 +167,7 @@ public class RequestListAdapter extends BaseAdapter {
 //                String date = sfd.format(new Date(messageModel.getMessageTime()).getTime());
 //                dateTV.setText(text);
             createDate.setText(text);
-        }
-        else
+        } else
             createDate.setText("");
 
 //        createDate.setText(requestListModel.getCreatedAt().toDate().toString());
