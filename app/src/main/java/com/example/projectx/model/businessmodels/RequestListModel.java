@@ -1,7 +1,5 @@
 package com.example.projectx.model.businessmodels;
 
-import com.google.firebase.Timestamp;
-
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

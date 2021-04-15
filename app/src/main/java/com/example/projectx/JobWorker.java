@@ -2,21 +2,21 @@ package com.example.projectx;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Service;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
-import android.os.Handler;
-import android.os.IBinder;
 import android.os.Looper;
-import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
+import androidx.work.WorkRequest;
+import androidx.work.Worker;
+import androidx.work.WorkerParameters;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -29,83 +29,52 @@ import com.google.common.collect.ImmutableMap;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
-public class LocationFetchService extends Service {
-    public LocationFetchService() {
-    }
-
-    private Context mContext;
-
-
-    //Use this method to show toast
-    void showToast(String message) {
-        if (mContext != null) {
-            Handler handler = new Handler(Looper.getMainLooper());
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
-                }
-            });
-
-        }
-    }
-
-    @Override
-    public IBinder onBind(Intent intent) {
-        // TODO: Return the communication channel to the service.
-        return null;
-    }
-
+public class JobWorker extends Worker {
+    Context context;
     FusedLocationProviderClient mFusedLocationClient;
+    private final LocationCallback mLocationCallback = new LocationCallback() {
 
-    int MINUTES = 1; // The delay in minutes
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+            Location mLastLocation = locationResult.getLastLocation();
 
-
-    private Timer timer;
-    private TimerTask timerTask;
-
-    public void startTimer() {
-        timer = new Timer();
-        timerTask = new TimerTask() {
-            public void run() {
-                updateLocationToUser();
-            }
-        };
-        timer.schedule(timerTask, 1000, 1000 * 30 * MINUTES); //
-    }
-
-    public void stoptimertask() {
-        if (timer != null) {
-            timer.cancel();
-            timer = null;
+            updateLastSeenLocationToUser(mLastLocation);
+            //latitudeTextView.setText("Latitude: " + mLastLocation.getLatitude() + "");
+            //longitTextView.setText("Longitude: " + mLastLocation.getLongitude() + "");
         }
-    }
+    };
 
-
-    @Override
-    public void onCreate() {
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        startTimer();
-        super.onCreate();
+    public JobWorker(@NonNull Context context, @NonNull WorkerParameters params) {
+        super(context, params);
+        this.context = context;
     }
 
     @Override
-    public int onStartCommand(final Intent intent,
-                              final int flags,
-                              final int startId) {
-        mContext = getApplicationContext();//Get the context here
-        super.onStartCommand(intent, flags, startId);
-        return START_STICKY;
+    public Result doWork() {
 
-        //your code
+        // Do the work here--in this case, upload the images.
+        Log.i("in timer", "in timer ++++  ");
+
+        updateLocationToUser();
+
+
+        WorkRequest saveRequest = new OneTimeWorkRequest.Builder(JobWorker.class)
+                .setInitialDelay(10, TimeUnit.SECONDS)
+                .addTag("TAG_OUTPUT")
+                .build();
+        WorkManager
+                .getInstance(getApplicationContext())
+                .enqueue(saveRequest);
+
+        // Indicate whether the work finished successfully with the Result
+        return Result.success();
     }
 
     private boolean checkPermissions() {
 
-        return ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+        return ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
 
         // If we want background location
         // on Android 10.0 and higher,
@@ -113,19 +82,19 @@ public class LocationFetchService extends Service {
         // ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED
     }
 
-
     // method to check
     // if location is enabled
     private boolean isLocationEnabled() {
-        LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        LocationManager locationManager = (LocationManager) this.context.getSystemService(Context.LOCATION_SERVICE);
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
     }
-
 
     @SuppressLint("MissingPermission")
     private void updateLocationToUser() {
         // check if permissions are given
         if (checkPermissions()) {
+
+            Log.i("in timer", "Enabled+ permis");
 
             // check if location is enabled
             if (isLocationEnabled()) {
@@ -134,7 +103,9 @@ public class LocationFetchService extends Service {
                 // location from
                 // FusedLocationClient
                 // object
-                Log.i("Location", "Enabled");
+                mFusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
+
+                Log.i("in timer", "Enabled");
                 mFusedLocationClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
                     @Override
                     public void onComplete(@NonNull Task<Location> task) {
@@ -153,7 +124,6 @@ public class LocationFetchService extends Service {
 
     }
 
-
     @SuppressLint("MissingPermission")
     private void requestNewLocationData() {
 
@@ -169,26 +139,12 @@ public class LocationFetchService extends Service {
         mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
     }
 
-
-    private LocationCallback mLocationCallback = new LocationCallback() {
-
-        @Override
-        public void onLocationResult(LocationResult locationResult) {
-            Location mLastLocation = locationResult.getLastLocation();
-
-            updateLastSeenLocationToUser(mLastLocation);
-            //latitudeTextView.setText("Latitude: " + mLastLocation.getLatitude() + "");
-            //longitTextView.setText("Longitude: " + mLastLocation.getLongitude() + "");
-        }
-    };
-
     private void updateLastSeenLocationToUser(Location mLastLocation) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         DocumentReference docRef = db.collection("UserDetails").document(UserDetailsUtil.getUID());
         docRef.update(ImmutableMap.of("latitude", mLastLocation.getLatitude(), "longitude", mLastLocation.getLongitude()));
-        Log.i("Location", "Updated");
-        showToast("Location Updated");
-        Toast.makeText(this, "Location Updated", Toast.LENGTH_LONG).show();
+        Log.i("in timer", "Updated");
+        Toast.makeText(context, "Location Updated: I am here", Toast.LENGTH_LONG).show();
 
     }
 }

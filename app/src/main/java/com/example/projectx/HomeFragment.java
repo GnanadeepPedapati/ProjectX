@@ -2,6 +2,7 @@ package com.example.projectx;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -59,27 +60,33 @@ import static android.content.ContentValues.TAG;
  * create an instance of this fragment.
  */
 public class HomeFragment extends Fragment {
-    private int PICK_IMAGE_REQUEST = 1;
     boolean imageUploadSuccess;
     int PERMISSION_ID = 44;
-
-    private SeekBar sBar;
-    private TextView tView;
-
     FusedLocationProviderClient mFusedLocationClient;
-
-
     FirebaseStorage storage;
     StorageReference storageReference;
-    private Uri filePath;
     EditText searchText;
+    private final int PICK_IMAGE_REQUEST = 1;
+    private SeekBar sBar;
+    private TextView tView;
+    private Uri filePath;
+    private final LocationCallback mLocationCallback = new LocationCallback() {
+
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+            Location mLastLocation = locationResult.getLastLocation();
+            uploadImageAndSubmitRequest(searchText.getText().toString().trim(), mLastLocation);
+
+            //latitudeTextView.setText("Latitude: " + mLastLocation.getLatitude() + "");
+            //longitTextView.setText("Longitude: " + mLastLocation.getLongitude() + "");
+        }
+    };
 
 
     public HomeFragment() {
         // Required empty public constructor
 
     }
-
 
     // TODO: Rename and change types and number of parameters
     public static HomeFragment newInstance() {
@@ -103,7 +110,7 @@ public class HomeFragment extends Fragment {
         sBar = getView().findViewById(R.id.seekBar1);
         tView = getView().findViewById(R.id.textview1);
 
-        tView.setText(sBar.getProgress()/2.0 + " Km");
+        tView.setText(sBar.getProgress() / 2.0 + " Km");
 
         sBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             int pval = 0;
@@ -111,7 +118,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 pval = progress;
-                tView.setText(pval/2.0 + " Km");
+                tView.setText(pval / 2.0 + " Km");
             }
 
             @Override
@@ -121,7 +128,7 @@ public class HomeFragment extends Fragment {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                tView.setText(pval/2.0 + " Km");
+                tView.setText(pval / 2.0 + " Km");
             }
         });
         attachButton.setOnClickListener(new View.OnClickListener() {
@@ -155,7 +162,6 @@ public class HomeFragment extends Fragment {
 
     }
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -163,12 +169,11 @@ public class HomeFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_home, container, false);
     }
 
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         FragmentActivity activity = getActivity();
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == activity.RESULT_OK && data != null && data.getData() != null) {
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null && data.getData() != null) {
             filePath = data.getData();
 
             Cursor returnCursor =
@@ -180,7 +185,6 @@ public class HomeFragment extends Fragment {
         }
     }
 
-
     private void attachFile() {
         Intent intent = new Intent();
         intent.setType("image/*");
@@ -188,7 +192,6 @@ public class HomeFragment extends Fragment {
         startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
 
     }
-
 
     public void saveReq(String text, String imageUrl, Location location) {
         Requests request = new Requests();
@@ -242,7 +245,6 @@ public class HomeFragment extends Fragment {
                     }
                 });
     }
-
 
     private void uploadImageAndSubmitRequest(String requestText, Location location) {
         if (filePath != null) {
@@ -319,7 +321,6 @@ public class HomeFragment extends Fragment {
             saveReq(requestText, null, location);
     }
 
-
     @SuppressLint("MissingPermission")
     private void getLastLocation() {
         // check if permissions are given
@@ -375,19 +376,6 @@ public class HomeFragment extends Fragment {
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getContext());
         mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
     }
-
-
-    private LocationCallback mLocationCallback = new LocationCallback() {
-
-        @Override
-        public void onLocationResult(LocationResult locationResult) {
-            Location mLastLocation = locationResult.getLastLocation();
-            uploadImageAndSubmitRequest(searchText.getText().toString().trim(), mLastLocation);
-
-            //latitudeTextView.setText("Latitude: " + mLastLocation.getLatitude() + "");
-            //longitTextView.setText("Longitude: " + mLastLocation.getLongitude() + "");
-        }
-    };
 
     private boolean checkPermissions() {
 

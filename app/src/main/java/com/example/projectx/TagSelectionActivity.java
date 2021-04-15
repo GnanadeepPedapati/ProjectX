@@ -1,17 +1,22 @@
 package com.example.projectx;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -28,13 +33,11 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
@@ -45,23 +48,26 @@ public class TagSelectionActivity extends AppCompatActivity {
     EditText tagsFilter;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     TextView skipNow;
+    private ProgressBar spinner;
     private List<String> selectedTags = new ArrayList<>();
-    private List<String> sourceTags = new ArrayList<>();
+    private final List<String> sourceTags = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tag_selection);
-        setSourceTags(sourceTags);
-        getTags();
+        getSourceTags();
         tagsFilter = findViewById(R.id.filterTags);
         Button tagSelectionContinue = findViewById(R.id.tagSelectionContinue);
+        spinner = findViewById(R.id.progressBar1);
 
+        onCoachMark();
 
         tagSelectionContinue.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                assignTagsToUser();
+                if (!selectedTags.isEmpty())
+                    assignTagsToUser();
             }
         });
         skipNow = findViewById(R.id.skip_now);
@@ -101,31 +107,50 @@ public class TagSelectionActivity extends AppCompatActivity {
             }
         });
 
-        getExistingTags();
 
     }
 
-    private void getTags() {
-        db.collection("Tags")
+
+    private void getSourceTags() {
+
+        db.collection("CollectionData").document("AllTags")
                 .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                         if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                Log.d(TAG, document.getId() + " => " + document.getData());
-                                sourceTags.add(document.getId());
-                                addTagToSourceGroup(document.getId());
-                            }
-                        } else {
-                            Log.d(TAG, "Error getting documents: ", task.getException());
+                            DocumentSnapshot result = task.getResult();
+                            Map<String, Object> data = result.getData();
+                            List<String> tags = (List<String>) data.get("Tags");
+                            addTagsToSourceTagsListAndGroup(tags);
+                            loadUserExistingTags();
+
                         }
                     }
                 });
     }
 
 
-    private void getExistingTags() {
+    public void onCoachMark() {
+
+        final Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+        dialog.setContentView(R.layout.coach_mark);
+        dialog.setCanceledOnTouchOutside(true);
+        //for dismissing anywhere you touch
+        View masterView = dialog.findViewById(R.id.coach_mark_master_view);
+        masterView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
+
+
+    private void loadUserExistingTags() {
         String uid = UserDetailsUtil.getUID();
         DocumentReference documentReference = db.collection("UserDetails").document(uid);
         documentReference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -134,11 +159,25 @@ public class TagSelectionActivity extends AppCompatActivity {
 
                 if (task.isSuccessful()) {
                     selectedTags = (List<String>) task.getResult().getData().get("tags");
+                    if (selectedTags == null)
+                        selectedTags = new ArrayList<>();
+                    loadExistingTags();
+                } else {
+                    selectedTags = new ArrayList<>();
                     loadExistingTags();
                 }
+
             }
         });
     }
+
+    private void addTagsToSourceTagsListAndGroup(List<String> tags) {
+        for (String tagName : tags) {
+            sourceTags.add(tagName);
+            addTagToSourceGroup(tagName);
+        }
+    }
+
 
     private void assignTagsToUser() {
         String uid = UserDetailsUtil.getUID();
@@ -152,8 +191,14 @@ public class TagSelectionActivity extends AppCompatActivity {
             @Override
             public void onSuccess(Void aVoid) {
 
-                Intent intent = new Intent(TagSelectionActivity.this, HomeActivity.class);
-                startActivity(intent);
+                if (getCallingActivity() != null && "com.example.projectx.ProfileViewActivity".equals(getCallingActivity().getClassName())) {
+                    Toast.makeText(getApplicationContext(), "Sucessfully Updated!", Toast.LENGTH_LONG).show();
+                    Intent intent = new Intent(TagSelectionActivity.this, ProfileViewActivity.class);
+                    startActivity(intent);
+                } else {
+                    Intent intent = new Intent(TagSelectionActivity.this, HomeActivity.class);
+                    startActivity(intent);
+                }
             }
         })
                 .addOnFailureListener(new OnFailureListener() {
@@ -222,10 +267,17 @@ public class TagSelectionActivity extends AppCompatActivity {
 
 
     private void loadExistingTags() {
-
-        for (String tagName : selectedTags)
+        for (String tagName : selectedTags) {
             addTagToSelection(tagName);
+            sourceTags.remove(tagName);
+        }
+        final ChipGroup chipGroup = findViewById(R.id.tag_group);
+        chipGroup.removeAllViews();
+        setSourceTags(sourceTags);
+
+
     }
+
 
     private void addTagToSourceGroup(String tagName) {
         final ChipGroup chipGroup = findViewById(R.id.tag_group);
@@ -263,6 +315,8 @@ public class TagSelectionActivity extends AppCompatActivity {
             final String tagName = tagList.get(index);
             addTagToSourceGroup(tagName);
         }
+        spinner.setVisibility(View.GONE);
+
     }
 
 }

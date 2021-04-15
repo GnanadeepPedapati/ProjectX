@@ -12,19 +12,21 @@ import android.os.Handler;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
+import androidx.work.WorkRequest;
 
 import com.example.projectx.model.UserDetails;
+import com.example.projectx.service.LocationFetchService;
+import com.example.projectx.service.NotificationService;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.SetOptions;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static android.content.ContentValues.TAG;
 
@@ -36,34 +38,34 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        String uid = UserDetailsUtil.getUID();
-//        if (uid != null)
-//            resetNotificationRequest(uid);
+
+        WorkRequest saveRequest = new OneTimeWorkRequest.Builder(JobWorker.class)
+                .setInitialDelay(10, TimeUnit.SECONDS)
+                .addTag("TAG_OUTPUT")
+                .build();
+        WorkManager
+                .getInstance(getApplicationContext())
+                .enqueue(saveRequest);
 
         createNotificationChannel();
-
-//        boolean myServiceRunning = isMyServiceRunning(NotificationService.class);
-//
-//        if (!myServiceRunning) {
-//            intent = new Intent(this, NotificationService.class);
-//            startService(intent);
-//        }
-
 
         new Handler().postDelayed(new Runnable() {
 
 
+            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void run() {
                 // This method will be executed once the timer is over
                 boolean userLoggedIn = UserDetailsUtil.isUserLoggedIn();
                 if (userLoggedIn) {
                     boolean myServiceRunning = isMyServiceRunning(NotificationService.class);
-
                     if (!myServiceRunning) {
                         Intent intent = new Intent(MainActivity.this, LocationFetchService.class);
                         startService(intent);
                     }
+
+//                    Intent i = new Intent(MainActivity.this, ViewPagerActivity.class);
+//                    startActivity(i);
                     postLogin();
                 } else {
 
@@ -118,34 +120,6 @@ public class MainActivity extends Activity {
         finish();
     }
 
-    private void resetNotificationRequest(String uid) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        Map<String, String> notificationMap = new HashMap<>();
-
-        notificationMap.put("requestNotification", null);
-        notificationMap.put("messageNotification", null);
-
-
-        db.collection("Notifications")
-                .document(uid)
-                .set(notificationMap)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Log.d("Insert", "DocumentSnapshot successfully written!");
-
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.w(TAG, "Error writing document", e);
-                    }
-                });
-
-
-    }
 
     private boolean isMyServiceRunning(Class<?> serviceClass) {
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
@@ -179,15 +153,4 @@ public class MainActivity extends Activity {
     }
 
 
-//    @Override
-//    protected void onDestroy() {
-////        stopService(intent);
-////        Intent broadcastIntent = new Intent();
-////        broadcastIntent.setAction("restartservice");
-////        broadcastIntent.setClass(this, Restarter.class);
-////        this.sendBroadcast(broadcastIntent);
-////        super.onDestroy();
-//   }
-
-    // [END auth_fui_result]
 }

@@ -1,10 +1,8 @@
-package com.example.projectx;
+package com.example.projectx.adapter;
 
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +12,7 @@ import android.widget.TextView;
 
 import androidx.core.graphics.drawable.DrawableCompat;
 
+import com.example.projectx.R;
 import com.example.projectx.model.ResponseOverview;
 
 import java.text.ParseException;
@@ -25,8 +24,8 @@ import java.util.Random;
 public class ResponseListAdapter extends BaseAdapter {
 
 
-    private Context context;
-    private List<ResponseOverview> responsesOverviews;
+    private final Context context;
+    private final List<ResponseOverview> responsesOverviews;
 
     public ResponseListAdapter(Context context, List<ResponseOverview> responsesOverviews) {
         this.context = context;
@@ -62,18 +61,13 @@ public class ResponseListAdapter extends BaseAdapter {
         ResponseOverview responseOverview = responsesOverviews.get(position);
 
         // get the TextView for item name and item description
-        TextView entityName = (TextView)
-                convertView.findViewById(R.id.entityName);
-        TextView lastMessage = (TextView)
-                convertView.findViewById(R.id.lastMessage);
-        TextView messagesCount = (TextView)
-                convertView.findViewById(R.id.messagesCount);
-        TextView lastReceivedTime = (TextView)
-                convertView.findViewById(R.id.lastReceivedTime);
-        TextView isBusiness = (TextView)
-                convertView.findViewById(R.id.isBusiness);
+        TextView entityName = convertView.findViewById(R.id.entityName);
+        TextView lastMessage = convertView.findViewById(R.id.lastMessage);
+        TextView messagesCount = convertView.findViewById(R.id.messagesCount);
+        TextView lastReceivedTime = convertView.findViewById(R.id.lastReceivedTime);
+        TextView isBusiness = convertView.findViewById(R.id.isBusiness);
 
-        Button icon = (Button) convertView.findViewById(R.id.round_icon);
+        Button icon = convertView.findViewById(R.id.round_icon);
         Random rnd = new Random();
         int color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
 
@@ -83,18 +77,16 @@ public class ResponseListAdapter extends BaseAdapter {
         if (responseOverview.getEntityName() != null && responseOverview.getEntityName().length() != 0) {
             icon.setVisibility(View.VISIBLE);
             icon.setText(responseOverview.getEntityName().substring(0, 1).toUpperCase());
-            if(responseOverview.isBusiness()){
+            if (responseOverview.isBusiness()) {
                 isBusiness.setVisibility(View.VISIBLE);
-            }
-            else{
+            } else {
                 isBusiness.setVisibility(View.INVISIBLE);
             }
 
-        } else{
+        } else {
             icon.setVisibility(View.INVISIBLE);
             isBusiness.setVisibility(View.INVISIBLE);
         }
-
 
 
         //sets the text for item name and item description from the current item object

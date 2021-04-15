@@ -2,22 +2,22 @@ package com.example.projectx;
 
 import android.content.Intent;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+import com.example.projectx.adapter.RequestListAdapter;
 import com.example.projectx.model.Requests;
-import com.example.projectx.model.ResponseOverview;
 import com.example.projectx.model.businessmodels.RequestListModel;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -28,6 +28,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -40,14 +41,13 @@ public class RequestsListFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
-
+    ArrayList<RequestListModel> requests = new ArrayList<>();
+    RequestListAdapter requestListAdapter;
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
-
-    ArrayList<RequestListModel> requests = new ArrayList<>();
-    RequestListAdapter requestListAdapter;
     private SwipeRefreshLayout pullToRefresh;
+    private TextView noRequestTextView;
 
 
     public RequestsListFragment() {
@@ -93,7 +93,7 @@ public class RequestsListFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
 
-        ListView requestListView = (ListView) getView().findViewById(R.id.request_list_item);
+        ListView requestListView = getView().findViewById(R.id.request_list_item);
 
 
         requestListView.setSelector(R.color.transparent);
@@ -103,6 +103,7 @@ public class RequestsListFragment extends Fragment {
         requestListAdapter = new RequestListAdapter(getActivity().getApplicationContext(), requests);
 
         pullToRefresh = getView().findViewById(R.id.pullToRefresh);
+        noRequestTextView = getView().findViewById(R.id.noRequestsText);
         pullToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -144,9 +145,11 @@ public class RequestsListFragment extends Fragment {
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
                             Log.d("fires", "hello");
+                            List<Requests> requests = task.getResult().toObjects(Requests.class);
+                            if (requests.isEmpty())
+                                noRequestTextView.setVisibility(View.VISIBLE);
 
-                            for (Requests request : task.getResult().toObjects(Requests.class)) {
-
+                            for (Requests request : requests) {
                                 convertToRequestListModel(request);
                             }
                             pullToRefresh.setRefreshing(false);

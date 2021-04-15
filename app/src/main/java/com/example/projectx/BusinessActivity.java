@@ -1,9 +1,5 @@
 package com.example.projectx;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -15,10 +11,12 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.projectx.model.UserDetails;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
+
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
 
@@ -39,7 +37,7 @@ public class BusinessActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_business);
-        businessCard = (CardView) findViewById(R.id.businessCard);
+        businessCard = findViewById(R.id.businessCard);
         continueBtn = findViewById(R.id.continueBtn);
         businessName = findViewById(R.id.businessName);
 
@@ -52,6 +50,7 @@ public class BusinessActivity extends AppCompatActivity {
 
         skipNow = findViewById(R.id.skip_now);
 
+        continueBtn.setEnabled(false);
         continueBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -125,6 +124,7 @@ public class BusinessActivity extends AppCompatActivity {
     public void onRadioButtonClicked(View view) {
         // Is the button now checked?
         boolean checked = ((RadioButton) view).isChecked();
+        continueBtn.setEnabled(true);
 
         // Check which radio button was clicked
         switch (view.getId()) {
@@ -147,8 +147,6 @@ public class BusinessActivity extends AppCompatActivity {
 
 
     private void insertBusinesssData() {
-
-
         Map<String, Object> hashMap = new HashMap<>();
         hashMap.put("address", getText(businessAddress) + "  ^ " + getText(businessCity));
         hashMap.put("businessPhoneNumber", getText(businessPhoneNo));
@@ -187,7 +185,6 @@ public class BusinessActivity extends AppCompatActivity {
                         Toast.makeText(getApplicationContext(), "Something went wrong", Toast.LENGTH_LONG).show();
                     }
                 });
-        ;
 
     }
 
