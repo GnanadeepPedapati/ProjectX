@@ -61,7 +61,7 @@ public class TagSelectionActivity extends AppCompatActivity {
         Button tagSelectionContinue = findViewById(R.id.tagSelectionContinue);
         spinner = findViewById(R.id.progressBar1);
 
-        onCoachMark();
+//        onCoachMark();
 
         tagSelectionContinue.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -131,23 +131,23 @@ public class TagSelectionActivity extends AppCompatActivity {
     }
 
 
-    public void onCoachMark() {
-
-        final Dialog dialog = new Dialog(this);
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
-        dialog.setContentView(R.layout.coach_mark);
-        dialog.setCanceledOnTouchOutside(true);
-        //for dismissing anywhere you touch
-        View masterView = dialog.findViewById(R.id.coach_mark_master_view);
-        masterView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog.dismiss();
-            }
-        });
-        dialog.show();
-    }
+//    public void onCoachMark() {
+//
+//        final Dialog dialog = new Dialog(this);
+//        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+//        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+//        dialog.setContentView(R.layout.coach_mark);
+//        dialog.setCanceledOnTouchOutside(true);
+//        //for dismissing anywhere you touch
+//        View masterView = dialog.findViewById(R.id.coach_mark_master_view);
+//        masterView.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                dialog.dismiss();
+//            }
+//        });
+//        dialog.show();
+//    }
 
 
     private void loadUserExistingTags() {
