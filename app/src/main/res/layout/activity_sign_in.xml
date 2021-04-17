@@ -73,11 +73,10 @@
                 android:id="@+id/emailSignIn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="20dp"
                 android:background="@drawable/rounded_rectangle_holo_blue"
                 android:text="Sign In"
-
-                android:textColor="@color/white"
+                android:textColor="@color/black"
 
                 />
 
@@ -129,30 +128,38 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="30dp">
-
-            <ImageButton
+            <com.google.android.gms.common.SignInButton
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:id="@+id/googleSignIn"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentRight="true"
-                android:layout_margin="10dp"
-                android:background="@color/primary"
-                android:padding="10dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/googleicon" />
+                android:layout_alignParentBottom="true"
+                >
 
-            <ImageButton
-                android:id="@+id/faceBookSignIn"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentRight="true"
-                android:layout_margin="10dp"
-                android:background="@color/primary"
-                android:padding="10dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/facebookicon" />
+            </com.google.android.gms.common.SignInButton>
+
+<!--            <ImageButton-->
+<!--                android:id="@+id/googleSignIn"-->
+<!--                android:layout_width="50dp"-->
+<!--                android:layout_height="50dp"-->
+<!--                android:layout_alignParentTop="true"-->
+<!--                android:layout_alignParentRight="true"-->
+<!--                android:layout_margin="10dp"-->
+<!--                android:background="@color/primary"-->
+<!--                android:padding="10dp"-->
+<!--                android:scaleType="fitCenter"-->
+<!--                android:src="@drawable/googleicon" />-->
+
+<!--            <ImageButton-->
+<!--                android:id="@+id/faceBookSignIn"-->
+<!--                android:layout_width="50dp"-->
+<!--                android:layout_height="50dp"-->
+<!--                android:layout_alignParentTop="true"-->
+<!--                android:layout_alignParentRight="true"-->
+<!--                android:layout_margin="10dp"-->
+<!--                android:background="@color/primary"-->
+<!--                android:padding="10dp"-->
+<!--                android:scaleType="fitCenter"-->
+<!--                android:src="@drawable/facebookicon" />-->
 
 
 

@@ -74,7 +74,7 @@ public class TagSelectionActivity extends AppCompatActivity {
 
         if (getCallingActivity() != null && "com.example.projectx.ProfileViewActivity".equals(getCallingActivity().getClassName())) {
             TextView tagHeading = findViewById(R.id.tag_act_heading);
-            tagHeading.setText("Your Tags.You can select more from below list");
+            tagHeading.setText("Your Interests");
             tagSelectionContinue.setText("Update");
             skipNow.setVisibility(View.GONE);
         }
@@ -129,25 +129,6 @@ public class TagSelectionActivity extends AppCompatActivity {
                     }
                 });
     }
-
-
-//    public void onCoachMark() {
-//
-//        final Dialog dialog = new Dialog(this);
-//        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-//        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
-//        dialog.setContentView(R.layout.coach_mark);
-//        dialog.setCanceledOnTouchOutside(true);
-//        //for dismissing anywhere you touch
-//        View masterView = dialog.findViewById(R.id.coach_mark_master_view);
-//        masterView.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                dialog.dismiss();
-//            }
-//        });
-//        dialog.show();
-//    }
 
 
     private void loadUserExistingTags() {

@@ -16,6 +16,7 @@ import androidx.annotation.NonNull;
 import com.example.projectx.model.UserDetails;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
+import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -54,12 +55,10 @@ public class SignInActivity extends Activity implements View.OnClickListener {
         setContentView(R.layout.activity_sign_in);
         emailInput = findViewById(R.id.email);
         passwordInput = findViewById(R.id.password);
-        ImageButton googleSignIn = findViewById(R.id.googleSignIn);
-        ImageButton fbSignIn = findViewById(R.id.faceBookSignIn);
+        SignInButton googleSignIn = findViewById(R.id.googleSignIn);
         Button emailSignIn = findViewById(R.id.emailSignIn);
         googleSignIn.setOnClickListener(this);
         emailSignIn.setOnClickListener(this);
-        fbSignIn.setOnClickListener(this);
         TextView signUpTextView = findViewById(R.id.signUpLink);
 
         auth = FirebaseAuth.getInstance();

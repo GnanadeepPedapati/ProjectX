@@ -15,7 +15,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Time to Tag Yourself!"
+            android:text="Please choose your interests!"
             android:id="@+id/tag_act_heading"
             android:textColor="@color/white"
             android:layout_marginTop="20dp"
@@ -27,11 +27,11 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Please choose the tags you relate to, so that we can better direct requests to you"
+            android:text="We use the interests you choose to better  direct other user requests to you"
             android:id="@+id/tag_act_heading_small"
             android:textColor="@color/white"
             android:layout_marginTop="5dp"
-            android:textSize="8dp"
+            android:textSize="10dp"
             android:textStyle="bold"
             android:gravity="center">
 
@@ -51,6 +51,7 @@
             android:layout_marginTop="80dp"
             android:layout_weight="5"
             android:layout_margin="20dp"
+            android:id="@+id/nonbusiness"
             android:orientation="vertical">
 
 
@@ -98,6 +99,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/tagSelectionContinue"
             android:text="Continue"
+            android:backgroundTint="@color/secondary"
             android:layout_margin="20dp"/>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

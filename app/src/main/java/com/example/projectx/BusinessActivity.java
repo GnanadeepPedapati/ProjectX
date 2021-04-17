@@ -190,6 +190,9 @@ public class BusinessActivity extends AppCompatActivity {
 
 
     private void goToHomeActivity() {
+        if(isBusiness == true){
+            Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+        }
         Intent intent = new Intent(getApplicationContext(), TagSelectionActivity.class);
         startActivity(intent);
     }
