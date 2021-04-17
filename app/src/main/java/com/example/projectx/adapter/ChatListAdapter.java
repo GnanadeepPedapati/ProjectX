@@ -196,16 +196,27 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         void bind(int position) throws ParseException {
             MessageModel messageModel = list.get(position);
             String messageText = messageModel.getMessage();
-            if (!messageText.contains("images"))
+            if (timeView.getVisibility() != View.GONE) {
+                timeView.setVisibility(View.GONE);
+            }
+            if (!messageText.contains("images")) {
                 messageTV.setText(messageText);
-            else {
+                //Some issue with recyler view - so we need to set all visiblity and gone pro[erly
+                messageTV.setVisibility(View.VISIBLE);
+
+                Glide.with(context).clear(imageView);
+                imageView.setVisibility(View.GONE);
+            } else {
                 StorageReference imageStorage = storageReference.child(messageText);
                 imageView.setVisibility(View.VISIBLE);
+                messageTV.setVisibility(View.GONE);
+
                 Glide.with(context)
                         .load(imageStorage)
                         .into(imageView);
 
             }
+//            Timestamp ts = new Timestamp();
             if (messageModel.getMessageTime() != null) {
                 SimpleDateFormat sfd = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss a");
                 Date date = sfd.parse(messageModel.getMessageTime());
@@ -221,6 +232,16 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 //                dateTV.setText(text);
                 timeView.setText(text);
             }
+
+            imageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    Intent intent = new Intent(context, PhotoViewActivity.class);
+                    intent.putExtra("ref", messageText);
+                    context.startActivity(intent);
+                }
+            });
         }
     }
 }
