@@ -96,7 +96,6 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         RightChatBubbleViewHolder(final View itemView) {
             super(itemView);
             messageTV = itemView.findViewById(R.id.message_text);
-            dateTV = itemView.findViewById(R.id.date_text);
             imageView = itemView.findViewById(R.id.message_image);
             timeView = itemView.findViewById(R.id.message_time);
             itemView.setOnClickListener(new View.OnClickListener() {
@@ -131,6 +130,7 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
                 Glide.with(context)
                         .load(imageStorage)
+                        .centerCrop()
                         .into(imageView);
 
             }
@@ -172,7 +172,6 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         LeftChatBubbleViewHolder(final View itemView) {
             super(itemView);
             messageTV = itemView.findViewById(R.id.message_text);
-            dateTV = itemView.findViewById(R.id.date_text);
             imageView = itemView.findViewById(R.id.message_image);
 
             timeView = itemView.findViewById(R.id.message_time);
@@ -213,6 +212,7 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
                 Glide.with(context)
                         .load(imageStorage)
+                        .centerCrop()
                         .into(imageView);
 
             }

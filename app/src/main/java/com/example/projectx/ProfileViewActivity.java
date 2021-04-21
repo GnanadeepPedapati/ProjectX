@@ -1,5 +1,6 @@
 package com.example.projectx;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Color;
@@ -15,19 +16,23 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.drawable.DrawableCompat;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.Map;
 import java.util.Random;
 
-public class ProfileViewActivity extends AppCompatActivity {
+public class ProfileViewActivity extends Activity {
 
 
     Button changePassword, myTags, signOut, helpCenter;
@@ -35,6 +40,7 @@ public class ProfileViewActivity extends AppCompatActivity {
 
     TextView profileName, textEmail, textPhone;
     FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+    View progressBarDialog;
 
 
     @Override
@@ -46,6 +52,7 @@ public class ProfileViewActivity extends AppCompatActivity {
         textEmail = findViewById(R.id.profileEmail);
         textPhone = findViewById(R.id.profilePhone);
         profileTitleLetter = findViewById(R.id.profileTitleLetter);
+        progressBarDialog = findViewById(R.id.progressOverlay);
 
 
         loadDetails();
@@ -99,7 +106,34 @@ public class ProfileViewActivity extends AppCompatActivity {
 
     }
 
+    private void loadUserDetails() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("UserDetails")
+                .document(UserDetailsUtil.getUID())
+                .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+
+                Map<String, Object> data = documentSnapshot.getData();
+                boolean isBusiness = (boolean) data.get("isBusiness");
+                progressBarDialog.setVisibility(View.GONE);
+                if (!isBusiness) {
+                    myTags.setVisibility(View.VISIBLE);
+                }
+            }
+        })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        progressBarDialog.setVisibility(View.GONE);
+
+                    }
+                });
+
+    }
+
     private void loadDetails() {
+        progressBarDialog.setVisibility(View.VISIBLE);
 
         FirebaseUser user = UserDetailsUtil.getUser();
         profileName.setText(user.getDisplayName());
@@ -114,6 +148,7 @@ public class ProfileViewActivity extends AppCompatActivity {
             profileTitleLetter.setText(user.getDisplayName().substring(0, 1).toUpperCase());
         textEmail.setText(user.getEmail());
         textPhone.setText(user.getPhoneNumber());
+        loadUserDetails();
 
     }
 

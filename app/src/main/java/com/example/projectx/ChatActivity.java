@@ -23,6 +23,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -63,11 +64,14 @@ import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 import static android.content.ContentValues.TAG;
@@ -88,10 +92,13 @@ public class ChatActivity extends Activity {
     String updateHasReplied;
     String otherUser;
     StorageReference storageReference;
+    String lastMessageId;
+    Set<String> messagesDisplaySet = new HashSet<>();
     private String chatId;
     private Uri filePath;
     private boolean isOtherUserActive = false;
     private final int PICK_IMAGE_REQUEST = 1;
+    private SwipeRefreshLayout pullToRefresh;
 
 
     @Override
@@ -115,7 +122,17 @@ public class ChatActivity extends Activity {
             Toast.makeText(getApplicationContext(), "User not logged In", Toast.LENGTH_LONG).show();
             return;
         }
-
+        pullToRefresh = findViewById(R.id.pullToRefresh);
+        pullToRefresh.setColorSchemeResources(android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light);
+        pullToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                loadMoreMessages(); // your code
+            }
+        });
 
         loggedInUser = currentUser.getUid();
         otherUser = getIntent().getStringExtra("otherUser");
@@ -280,9 +297,14 @@ public class ChatActivity extends Activity {
                 Log.d("fire", "onChildAdded:" + dataSnapshot.getKey());
                 Log.d("firebase", "child child");
                 // A new comment has been added, add it to the displayed list
-                MessageModel msg = dataSnapshot.getValue(MessageModel.class);
-                messagesList.add(msg);
-                adapter.notifyDataSetChanged();
+
+
+                if (!messagesDisplaySet.contains(dataSnapshot.getKey())) {
+                    messagesDisplaySet.add(dataSnapshot.getKey());
+                    MessageModel msg = dataSnapshot.getValue(MessageModel.class);
+                    messagesList.add(msg);
+                    adapter.notifyDataSetChanged();
+                }
                 recyclerView.scrollToPosition(messagesList.size() - 1);
                 mPostReference.child(chatId).child("unseenCount" + loggedInUser).setValue(0);
 
@@ -411,10 +433,85 @@ public class ChatActivity extends Activity {
     }
 
 
+    private void intialloadMessages() {
+        final boolean[] firstMessage = {false};
+        mDatabase.child(chatId).child("messages").orderByKey().limitToLast(30).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                for (DataSnapshot iter : snapshot.getChildren()) {
+
+                    if (!messagesDisplaySet.contains(iter.getKey())) {
+                        if (!firstMessage[0]) {
+                            firstMessage[0] = true;
+                            lastMessageId = iter.getKey();
+                        }
+                        messagesDisplaySet.add(iter.getKey());
+                        MessageModel msg = iter.getValue(MessageModel.class);
+                        messagesList.add(msg);
+                        adapter.notifyDataSetChanged();
+                    }
+
+
+                }
+                recyclerView.scrollToPosition(messagesList.size() - 1);
+                if (Objects.nonNull(childEventListener)) {
+                    mDatabase.child(chatId).child("messages").limitToLast(1).addChildEventListener(childEventListener);
+                    // mDatabase.child(chatId).child("messages").addChildEventListener(childEventListener);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+    }
+
+    private void loadMoreMessages() {
+        mDatabase.child(chatId).child("messages").orderByKey().endAt(lastMessageId).limitToLast(25).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                List<DataSnapshot> dataSnapshotList = new ArrayList<>();
+                for (DataSnapshot iter : snapshot.getChildren()) {
+                    dataSnapshotList.add(iter);
+                }
+
+                int count = 0;
+                Collections.reverse(dataSnapshotList);
+                for (DataSnapshot iter : dataSnapshotList) {
+
+                    if (!messagesDisplaySet.contains(iter.getKey())) {
+                        lastMessageId = iter.getKey();
+                        messagesDisplaySet.add(iter.getKey());
+                        MessageModel msg = iter.getValue(MessageModel.class);
+                        messagesList.add(0, msg);
+                        count++;
+                    }
+
+                }
+                adapter.notifyDataSetChanged();
+                recyclerView.scrollToPosition(count);
+                pullToRefresh.setRefreshing(false);
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+    }
+
     @Override
     protected void onResume() {
-        if (Objects.nonNull(childEventListener))
-            mDatabase.child(chatId).child("messages").addChildEventListener(childEventListener);
+        messagesDisplaySet.clear();
+        messagesList.clear();
+        intialloadMessages();
+
         mDatabase.child(ChatActivity.this.chatId).child("active_" + loggedInUser).setValue(true);
         super.onResume();
     }
@@ -434,13 +531,10 @@ public class ChatActivity extends Activity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             filePath = data.getData();
-
             Cursor returnCursor =
                     getContentResolver().query(filePath, null, null, null, null);
             int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
             returnCursor.moveToFirst();
-
-            Toast.makeText(getApplicationContext(), "Selected" + returnCursor.getString(nameIndex), Toast.LENGTH_LONG).show();
             uploadImage();
         }
     }

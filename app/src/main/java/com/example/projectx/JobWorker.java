@@ -2,7 +2,10 @@ package com.example.projectx;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
@@ -12,6 +15,9 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.core.app.TaskStackBuilder;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 import androidx.work.WorkRequest;
@@ -29,6 +35,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 public class JobWorker extends Worker {
@@ -56,12 +63,13 @@ public class JobWorker extends Worker {
 
         // Do the work here--in this case, upload the images.
         Log.i("in timer", "in timer ++++  ");
+        sendNotification();
 
         updateLocationToUser();
 
 
         WorkRequest saveRequest = new OneTimeWorkRequest.Builder(JobWorker.class)
-                .setInitialDelay(10, TimeUnit.SECONDS)
+                .setInitialDelay(20, TimeUnit.MINUTES)
                 .addTag("TAG_OUTPUT")
                 .build();
         WorkManager
@@ -70,6 +78,40 @@ public class JobWorker extends Worker {
 
         // Indicate whether the work finished successfully with the Result
         return Result.success();
+    }
+
+    private void sendNotification() {
+
+
+        Notification notification = buildNotification("Hello Work Scheduler");
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+        notificationManager.notify(0, notification);
+
+    }
+
+
+    private android.app.Notification buildNotification(String requestNotification) {
+
+        // Create an Intent for the activity you want to start
+        Intent resultIntent = new Intent(context, MainActivity.class);
+// Create the TaskStackBuilder and add the intent, which inflates the back stack
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+        stackBuilder.addNextIntentWithParentStack(resultIntent);
+// Get the PendingIntent containing the entire back stack
+        PendingIntent resultPendingIntent =
+                stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "Project_X")
+                .setSmallIcon(R.drawable.icon_logo)
+                .setContentTitle(requestNotification)
+                .setContentText( new Date().toString())
+                .setPriority(NotificationCompat.DEFAULT_VIBRATE)
+                .setContentIntent(resultPendingIntent)
+                .setOnlyAlertOnce(true)
+                // Set the intent that will fire when the user taps the notification
+                .setAutoCancel(true);
+        return builder.build();
+
+
     }
 
     private boolean checkPermissions() {

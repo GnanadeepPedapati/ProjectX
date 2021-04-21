@@ -1,11 +1,14 @@
 package com.example.projectx;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,12 +17,8 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.FirebaseFirestore;
-
-import java.util.Arrays;
-import java.util.List;
 
 import lombok.NonNull;
 
@@ -32,31 +31,44 @@ public class HomeActivity extends AppCompatActivity {
     //Image request code
     private final int PICK_IMAGE_REQUEST = 1;
 
-    public void onComposeAction(MenuItem mi) {
-        // handle click here
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.app_bar_menu, menu);
-        return true;
-    }
-
-
-    public void onSettingsAction(MenuItem menuItem) {
-        Intent intent = new Intent(HomeActivity.this, ProfileViewActivity.class);
-        startActivity(intent);
-    }
+//    public void onComposeAction(MenuItem mi) {
+//        // handle click here
+//    }
+//
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        // Inflate the menu; this adds items to the action bar if it is present.
+//        getMenuInflater().inflate(R.menu.app_bar_menu, menu);
+//        return true;
+//    }
+//
+//
+//    public void onSettingsAction(MenuItem menuItem) {
+//        Intent intent = new Intent(HomeActivity.this, ProfileViewActivity.class);
+//        startActivity(intent);
+//    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+        getSupportActionBar().hide();
 
         loadTagsIntoStorage();
 
 
+        ImageView imageView = findViewById(R.id.text_icon);
+        Glide.with(this).load(R.drawable.text_logo);
+
+        ImageButton settingsBtn = findViewById(R.id.settingsIcon);
+
+        settingsBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(HomeActivity.this, ProfileViewActivity.class);
+                startActivity(intent);
+            }
+        });
         requestStoragePermission();
         Fragment homeFragment = HomeFragment.newInstance();
         Fragment requestsFragment = RequestsListFragment.newInstance("1", "2");

@@ -11,12 +11,14 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/icon_logo"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@drawable/icon_logo"
         android:supportsRtl="true"
         android:theme="@style/Theme.ProjectX">
-        <activity android:name=".ViewPagerActivity"></activity>
+        <activity
+            android:name=".ViewPagerActivity"
+            android:screenOrientation="portrait"></activity>
 
         <service
             android:name=".service.LocationFetchService"
@@ -68,17 +70,39 @@
             </intent-filter>
         </receiver>
 
-        <activity android:name=".EditProfileActivity" />
-        <activity android:name=".ProfileViewActivity" />
-        <activity android:name=".BusinessActivity" />
-        <activity android:name=".TagSelectionActivity" />
-        <activity android:name=".PhotoViewActivity" />
-        <activity android:name=".HomeActivity" />
-        <activity android:name=".ResponsesListActivity" />
-        <activity android:name=".ChatActivity" />
-        <activity android:name=".SignUpActivity" />
-        <activity android:name=".SignInActivity" />
-        <activity android:name=".MainActivity">
+        <activity
+            android:name=".EditProfileActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ProfileViewActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".BusinessActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".TagSelectionActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".PhotoViewActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".HomeActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ResponsesListActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ChatActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".SignUpActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".SignInActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".MainActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

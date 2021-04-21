@@ -1,5 +1,6 @@
 package com.example.projectx;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -10,7 +11,6 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.projectx.model.UserDetails;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -37,7 +37,7 @@ import java.util.regex.Pattern;
 
 import static android.content.ContentValues.TAG;
 
-public class SignUpActivity extends AppCompatActivity {
+public class SignUpActivity extends Activity {
     EditText emailInput, passwordInput, confirmPasswordInput, nameInput;
     private FirebaseAuth auth;
 

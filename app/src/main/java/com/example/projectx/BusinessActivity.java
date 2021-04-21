@@ -1,5 +1,6 @@
 package com.example.projectx;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -12,7 +13,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -25,7 +25,7 @@ import java.util.Map;
 
 import static android.content.ContentValues.TAG;
 
-public class BusinessActivity extends AppCompatActivity {
+public class BusinessActivity extends Activity {
 
     boolean isBusiness;
     CardView businessCard;
@@ -76,11 +76,6 @@ public class BusinessActivity extends AppCompatActivity {
     private void submitBussinessData() {
 
         boolean isValidated = isRequired(businessName);
-        isRequired(businessAddress);
-        isRequired(businessCity);
-        isRequired(businessPinCode);
-        minLength(businessPhoneNo, 10);
-        minLength(businessPinCode, 6);
 
         isValidated = isValidated && isRequired(businessAddress);
         isValidated = isValidated && isRequired(businessCity);
@@ -185,16 +180,17 @@ public class BusinessActivity extends AppCompatActivity {
                         Toast.makeText(getApplicationContext(), "Something went wrong", Toast.LENGTH_LONG).show();
                     }
                 });
-
     }
 
 
     private void goToHomeActivity() {
-        if(isBusiness == true){
+        if (isBusiness == true) {
             Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+            startActivity(intent);
+        } else {
+            Intent intent = new Intent(getApplicationContext(), TagSelectionActivity.class);
+            startActivity(intent);
         }
-        Intent intent = new Intent(getApplicationContext(), TagSelectionActivity.class);
-        startActivity(intent);
     }
 
 

@@ -12,6 +12,31 @@
         android:layout_height="match_parent"
         android:background="@color/primary"
         android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:background="@color/black"
+            android:minHeight="60dp">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginLeft="10dp"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:id="@+id/text_icon"
+                    android:layout_width="80dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center_vertical"
+                    android:src="@drawable/text_logo" />
+
+            </LinearLayout>
+
+
+        </LinearLayout>
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -74,13 +99,19 @@
                 android:textColor="@color/white"
                 android:hint="Search For Tags" />
 
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none">
             <com.google.android.material.chip.ChipGroup
                 android:id="@+id/tag_group"
                 android:layout_width="wrap_content"
                 android:layout_marginTop="20dp"
                 android:layout_height="wrap_content">
 
+
             </com.google.android.material.chip.ChipGroup>
+            </ScrollView>
 
         </LinearLayout>
 

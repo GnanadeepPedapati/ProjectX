@@ -4,7 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
+    android:layout_marginLeft="8dp"
+    android:layout_marginRight="8dp"
+    android:layout_marginBottom="8dp"
+    android:layout_marginTop="5dp"
     android:orientation="vertical"
     android:id="@+id/main_layout">
 
@@ -12,8 +15,7 @@
         android:id="@+id/message_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:padding="4dp"
+        android:padding="8dp"
         android:background="@drawable/rounded_rectangle_white_no_border">
 
         <TextView
@@ -23,29 +25,17 @@
             android:minWidth="120dp"
             android:maxWidth="250dp"
             android:layout_alignParentLeft="true"
-            android:textSize="16sp"
+            android:textSize="17sp"
             android:textColor="@android:color/black"
             android:text="Hi" />
 
 
         <ImageView
             android:id="@+id/message_image"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:maxWidth="250dp"
-            android:minWidth="120dp"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
             android:visibility="invisible" />
 
-
-        <TextView
-            android:id="@+id/date_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignRight="@+id/message_text"
-            android:layout_below="@+id/message_text"
-            android:textSize="11sp"
-            android:textColor="@android:color/black"
-            tools:text="11:34" />
 
     </RelativeLayout>
     <RelativeLayout

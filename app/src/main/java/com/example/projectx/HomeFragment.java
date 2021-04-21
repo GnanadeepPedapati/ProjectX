@@ -4,15 +4,21 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Looper;
+import android.provider.DocumentsContract;
+import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.provider.Settings;
 import android.util.Log;
@@ -33,6 +39,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 
 import com.example.projectx.model.Requests;
+import com.example.projectx.util.PhotoCompressUtil;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -48,6 +55,10 @@ import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
@@ -76,6 +87,7 @@ public class HomeFragment extends Fragment {
         public void onLocationResult(LocationResult locationResult) {
             Location mLastLocation = locationResult.getLastLocation();
             uploadImageAndSubmitRequest(searchText.getText().toString().trim(), mLastLocation);
+
 
             //latitudeTextView.setText("Latitude: " + mLastLocation.getLatitude() + "");
             //longitTextView.setText("Longitude: " + mLastLocation.getLongitude() + "");
@@ -181,6 +193,7 @@ public class HomeFragment extends Fragment {
             int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
             returnCursor.moveToFirst();
 
+
             Toast.makeText(activity.getApplicationContext(), "Selected" + returnCursor.getString(nameIndex), Toast.LENGTH_LONG).show();
         }
     }
@@ -191,6 +204,96 @@ public class HomeFragment extends Fragment {
         intent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
 
+    }
+
+
+    private String getRealPathFromURI(Uri contentUri) {
+
+        String[] proj = {MediaStore.Images.Media.DATA};
+
+        Cursor returnCursor =
+                getActivity().getContentResolver().query(contentUri, proj, null, null, null);
+        int nameIndex = returnCursor.getColumnIndex(MediaStore.Images.Media.DATA);
+        returnCursor.moveToFirst();
+
+        String result = returnCursor.getString(nameIndex);
+        returnCursor.close();
+        return result;
+    }
+
+
+    @SuppressLint("NewApi")
+    public static String getFilePath(Context context, Uri uri) throws URISyntaxException {
+        String selection = null;
+        String[] selectionArgs = null;
+        // Uri is different in versions after KITKAT (Android 4.4), we need to
+        if (Build.VERSION.SDK_INT >= 19 && DocumentsContract.isDocumentUri(context.getApplicationContext(), uri)) {
+            if (isExternalStorageDocument(uri)) {
+                final String docId = DocumentsContract.getDocumentId(uri);
+                final String[] split = docId.split(":");
+                return Environment.getExternalStorageDirectory() + "/" + split[1];
+            } else if (isDownloadsDocument(uri)) {
+                final String id = DocumentsContract.getDocumentId(uri);
+                uri = ContentUris.withAppendedId(
+                        Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
+            } else if (isMediaDocument(uri)) {
+                final String docId = DocumentsContract.getDocumentId(uri);
+                final String[] split = docId.split(":");
+                final String type = split[0];
+                if ("image".equals(type)) {
+                    uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+                } else if ("video".equals(type)) {
+                    uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+                } else if ("audio".equals(type)) {
+                    uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+                }
+                selection = "_id=?";
+                selectionArgs = new String[]{
+                        split[1]
+                };
+            }
+        }
+        if ("content".equalsIgnoreCase(uri.getScheme())) {
+
+
+            if (isGooglePhotosUri(uri)) {
+                return uri.getLastPathSegment();
+            }
+
+            String[] projection = {
+                    MediaStore.Images.Media.DATA
+            };
+            Cursor cursor = null;
+            try {
+                cursor = context.getContentResolver()
+                        .query(uri, projection, selection, selectionArgs, null);
+                int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                if (cursor.moveToFirst()) {
+                    return cursor.getString(column_index);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else if ("file".equalsIgnoreCase(uri.getScheme())) {
+            return uri.getPath();
+        }
+        return null;
+    }
+
+    public static boolean isExternalStorageDocument(Uri uri) {
+        return "com.android.externalstorage.documents".equals(uri.getAuthority());
+    }
+
+    public static boolean isDownloadsDocument(Uri uri) {
+        return "com.android.providers.downloads.documents".equals(uri.getAuthority());
+    }
+
+    public static boolean isMediaDocument(Uri uri) {
+        return "com.android.providers.media.documents".equals(uri.getAuthority());
+    }
+
+    public static boolean isGooglePhotosUri(Uri uri) {
+        return "com.google.android.apps.photos.content".equals(uri.getAuthority());
     }
 
     public void saveReq(String text, String imageUrl, Location location) {
@@ -246,8 +349,40 @@ public class HomeFragment extends Fragment {
                 });
     }
 
+
+
+   private void  compressAndUpload(Uri imageUri){
+
+       try {
+           Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), imageUri);
+           ByteArrayOutputStream baos = new ByteArrayOutputStream();
+           bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+           byte[] data = baos.toByteArray();
+
+
+          UploadTask uploadTask = null;
+           // = mountainsRef.putBytes(data);
+           uploadTask.addOnFailureListener(new OnFailureListener() {
+               @Override
+               public void onFailure(@NonNull Exception exception) {
+                   // Handle unsuccessful uploads
+               }
+           }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+               @Override
+               public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                   // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
+                   // ...
+               }
+           });
+       } catch (IOException e) {
+           e.printStackTrace();
+       }
+
+   }
     private void uploadImageAndSubmitRequest(String requestText, Location location) {
         if (filePath != null) {
+
+
 
             // Code for showing progressDialog while uploading
             ProgressDialog progressDialog

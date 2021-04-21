@@ -1,10 +1,13 @@
 package com.example.projectx;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -109,34 +112,10 @@ public class ResponsesListActivity extends Activity {
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isExpanded == false) {
-                    if (Objects.nonNull(imageUrl) && imageUrl != "") {
-
-                        StorageReference imageStorage = storageReference.child(imageUrl);
-                        imageView.setVisibility(View.GONE);
-                        Glide.with(getApplicationContext()).clear(imageView);
-                        expandedImageView.setVisibility(View.VISIBLE);
-                        Glide.with(getApplicationContext())
-                                .load(imageStorage)
-                                .fitCenter()
-                                .useAnimationPool(true)
-                                .into(expandedImageView);
-                        isExpanded = true;
-                    }
-                } else {
-                    imageView.setVisibility(View.VISIBLE);
-                    expandedImageView.setVisibility(View.GONE);
-                    Glide.with(getApplicationContext()).clear(expandedImageView);
+                if (Objects.nonNull(imageUrl) && imageUrl != "") {
                     StorageReference imageStorage = storageReference.child(imageUrl);
-
-                    Glide.with(getApplicationContext())
-                            .load(imageStorage)
-                            .fitCenter()
-                            .thumbnail(0.1f).circleCrop()
-                            .into(imageView);
-                    isExpanded = false;
+                    onCoachMark(imageStorage);
                 }
-
             }
         });
         pullToRefresh = findViewById(R.id.pullToRefresh);
@@ -174,6 +153,32 @@ public class ResponsesListActivity extends Activity {
                 startActivity(intent);
             }
         });
+    }
+
+
+    public void onCoachMark(StorageReference imageStorage) {
+
+        final Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+        dialog.setContentView(R.layout.coach_mark);
+        dialog.setCanceledOnTouchOutside(true);
+        //for dismissing anywhere you touch
+
+        ImageView imageView = dialog.findViewById(R.id.coach_marks_image);
+
+        Glide.with(getApplicationContext())
+                .load(imageStorage)
+                .fitCenter()
+                .into(imageView);
+        View masterView = dialog.findViewById(R.id.coach_mark_master_view);
+        masterView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
     }
 
 
