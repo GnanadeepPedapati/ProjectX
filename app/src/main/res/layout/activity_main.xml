@@ -10,18 +10,18 @@
 
 
     <ImageView
-        android:layout_width="200dp"
-        android:layout_height="200dp"
+        android:layout_width="400dp"
+        android:layout_height="400dp"
         android:gravity="center"
-        android:src="@drawable/icon_logo" />
+        android:src="@drawable/tunn" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="Just Ask, We do the rest!"
-        android:textColor="@color/white"
-        android:textSize="15dp" />
+<!--    <TextView-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:gravity="center"-->
+<!--        android:text="Just Ask, We do the rest!"-->
+<!--        android:textColor="@color/white"-->
+<!--        android:textSize="15dp" />-->
 
     <!--    </TextView>-->
 </LinearLayout>

@@ -101,7 +101,7 @@ public class JobWorker extends Worker {
         PendingIntent resultPendingIntent =
                 stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "Project_X")
-                .setSmallIcon(R.drawable.icon_logo)
+                .setSmallIcon(R.drawable.text_logo)
                 .setContentTitle(requestNotification)
                 .setContentText( new Date().toString())
                 .setPriority(NotificationCompat.DEFAULT_VIBRATE)

@@ -98,6 +98,18 @@
 
     </LinearLayout>
     </ScrollView>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/no_response_text"
+        android:text="Oops! You have no responses yet"
+        android:textColor="@color/black"
+        android:layout_marginTop="300dp"
+        android:layout_gravity="center"
+        android:textSize="20dp"
+        android:gravity="center"
+        android:visibility="gone">
+    </TextView>
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/pullToRefresh"
         android:layout_width="match_parent"

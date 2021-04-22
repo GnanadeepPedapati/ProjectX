@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
+import androidx.core.content.ContextCompat;
 import lombok.SneakyThrows;
 
 public class RequestListAdapter extends BaseAdapter {
@@ -144,10 +145,12 @@ public class RequestListAdapter extends BaseAdapter {
 
         if (requestListModel.getResponsesCount() == 0) {
             responsesCount.setText("No Responses Yet");
-            responsesCount.setEnabled(false);
+//            responsesCount.setEnabled(false);
+            responsesCount.getBackground().setTint(ContextCompat.getColor(context,R.color.quantum_grey));
         } else {
             responsesCount.setText("View all " + requestListModel.getResponsesCount() + " Responses");
-            responsesCount.setEnabled(true);
+//            responsesCount.setEnabled(true);
+            responsesCount.getBackground().setTint(ContextCompat.getColor(context,R.color.teal_200));
 
         }
 

@@ -42,6 +42,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 import lombok.SneakyThrows;
@@ -56,6 +57,7 @@ public class ResponsesListActivity extends Activity {
     StorageReference storageReference = storage.getReference();
     private boolean isExpanded;
     private SwipeRefreshLayout pullToRefresh;
+    TextView noRequestsTextView;
 
     @SneakyThrows
     @Override
@@ -66,6 +68,7 @@ public class ResponsesListActivity extends Activity {
         String createdDate = getIntent().getStringExtra("createdDate");
         final String imageUrl = getIntent().getStringExtra("imageUrl");
         TextView createdDateText = findViewById(R.id.request_create_time);
+        noRequestsTextView = findViewById(R.id.no_response_text);
         if (createdDate != null) {
             SimpleDateFormat sfd = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss a");
             Date date = sfd.parse(createdDate);
@@ -193,7 +196,11 @@ public class ResponsesListActivity extends Activity {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
-                            for (UserRequests userRequest : task.getResult().toObjects(UserRequests.class)) {
+                            List<UserRequests> userRequests = task.getResult().toObjects(UserRequests.class);
+                            if (userRequests.isEmpty())
+                                noRequestsTextView.setVisibility(View.VISIBLE);
+                                pullToRefresh.setRefreshing(false);
+                            for (UserRequests userRequest : userRequests) {
                                 ResponseOverview responseOverview = new ResponseOverview();
                                 responseOverview.setEntityName("");
                                 responseOverview.setOtherUser(userRequest.getReceiver());

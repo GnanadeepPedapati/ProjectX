@@ -87,7 +87,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         PendingIntent resultPendingIntent =
                 stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "Project_X")
-                .setSmallIcon(R.drawable.icon_logo)
+                .setSmallIcon(R.drawable.tunn)
                 .setContentTitle(requestNotification)
                 .setPriority(NotificationCompat.DEFAULT_VIBRATE)
                 .setContentIntent(resultPendingIntent)
